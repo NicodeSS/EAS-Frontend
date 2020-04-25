@@ -3,7 +3,8 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
-import vuetify from './plugins/vuetify';
+import vuetify from './plugins/vuetify'
+import store from './store/index'
 
 Vue.config.productionTip = false
 
@@ -13,5 +14,6 @@ new Vue({
   router,
   components: { App },
   vuetify,
+  store,
   template: '<App/>'
 })
