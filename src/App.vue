@@ -20,7 +20,7 @@
                 </v-list-item-content>
               </v-list-item>
           </v-list-group>
-          <v-list-item link v-else>
+          <v-list-item link v-else @click.stop="pushRoute(item.route)">
             <v-list-item-action>
               <v-icon>{{ item.icon }}</v-icon>
             </v-list-item-action>
@@ -66,18 +66,22 @@
         {
           title: "员工管理",
           icon: "mdi-account",
+          route: "/"
         },
         {
           title: "排班管理",
           icon: "mdi-account-clock",
+          route: "/t2"
         },
         {
           title: "排班展示",
           icon: "mdi-calendar-month-outline",
+          route: "/"
         },
         {
           title: "活动审批",
-          icon: "mdi-check-underline"
+          icon: "mdi-check-underline",
+          route: "/"
           // children: [
           //   {
           //     title: "x1",
@@ -93,6 +97,7 @@
         {
           title: "考勤管理",
           icon: "mdi-check-outline",
+          route: "/"
         }
       ]
     }),
@@ -102,6 +107,9 @@
     methods: {
       switchTheme: function () {
         this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
+      },
+      pushRoute: function(target) {
+        this.$router.push(target);
       }
     },
     computed: {
