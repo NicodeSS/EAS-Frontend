@@ -38,6 +38,10 @@
     >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
       <v-toolbar-title>{{Title}}</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-btn icon @click.stop="switchTheme">
+        <v-icon>{{ currentThemeIcon }}</v-icon>
+      </v-btn>
     </v-app-bar>
 
     <v-content>
@@ -94,6 +98,16 @@
     }),
     created () {
       this.$vuetify.theme.dark = true;
+    },
+    methods: {
+      switchTheme: function () {
+        this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
+      }
+    },
+    computed: {
+      currentThemeIcon: function () {
+        return this.$vuetify.theme.dark ? "mdi-brightness-7" : "mdi-brightness-3";
+      }
     }
   }
 </script>
