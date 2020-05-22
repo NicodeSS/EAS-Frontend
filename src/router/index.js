@@ -1,25 +1,40 @@
 import Vue from "vue";
 import Router from "vue-router";
-import HelloWorld from "../components/HelloWorld";
-import HelloWorld2 from "../components/HelloWorld2";
-import Login from "../views/Login";
 Vue.use(Router);
 
 export default new Router({
   routes: [
     {
       path: "/",
-      name: "HelloWorld",
-      component: HelloWorld
+      name: "Layout",
+      meta: {
+        requireAuth: true
+      },
+      component: resolve => require(["../layouts/Layout"], resolve),
+      children: [
+        {
+          path: "/",
+          component: resolve => require(["../components/HelloWorld"], resolve)
+        },
+        {
+          path: "/t1",
+          component: resolve => require(["../components/HelloWorld"], resolve)
+        },
+        {
+          path: "/t2",
+          component: resolve => require(["../components/HelloWorld2"], resolve)
+        }
+      ]
     },
     {
       path: "/login",
       name: "Login",
-      component: Login
+      component: resolve => require(["../views/Login"], resolve)
     },
     {
-      path: "/t2",
-      component: HelloWorld2
+      path: "*",
+      name: "Not Found",
+      component: resolve => require(["../views/404.vue"], resolve)
     }
   ]
 });

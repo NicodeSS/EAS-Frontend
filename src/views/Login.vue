@@ -9,26 +9,34 @@
                 <v-toolbar-title>员工管理系统 - 登陆</v-toolbar-title>
               </v-toolbar>
               <v-card-text>
-                <v-form>
+                <v-form v-model="valid">
                   <v-text-field
                     label="工号"
-                    name="login"
+                    v-model="username"
+                    :rules="nameRules"
                     prepend-icon="person"
                     type="text"
+                    required
                   ></v-text-field>
 
                   <v-text-field
-                    id="password"
                     label="密码"
-                    name="password"
+                    v-model="password"
+                    :rules="passRules"
                     prepend-icon="lock"
                     type="password"
+                    required
                   ></v-text-field>
                 </v-form>
               </v-card-text>
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="primary" v-on:click="doLogin">Login</v-btn>
+                <v-btn
+                  :disabled="!valid"
+                  color="primary"
+                  @click="doLogin($event)"
+                  >Login</v-btn
+                >
               </v-card-actions>
             </v-card>
           </v-col>
@@ -41,10 +49,30 @@
 <script>
 export default {
   name: "Login",
+  data: () => ({
+    valid: false,
+    username: "",
+    password: "",
+    nameRules: [
+      v => !!v || "请输入用户名",
+      v => (v.length >= 6 && v.length <= 16) || "用户名长度为6-16个字符"
+    ],
+    passRules: [
+      v => !!v || "请输入密码",
+      v => (v.length >= 6 && v.length <= 16) || "密码长度为6-16个字符"
+    ]
+  }),
   methods: {
-    doLogin() {
-      this.$store.commit("changeLoginStatus", true);
-      this.$store.commit("changeIdentity", 1);
+    doLogin(event) {
+      event.preventDefault();
+      alert("Hi");
+      this.$store.dispatch("setUser", { type: 1, id: 1, name: "Nicode" });
+      if (this.$route.query.redirect) {
+        let redirect = this.$route.query.redirect;
+        this.$router.push(redirect);
+      } else {
+        this.$router.push("/");
+      }
     }
   }
 };
