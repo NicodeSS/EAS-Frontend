@@ -11,8 +11,10 @@ export default new Vuex.Store({
   state: {
     drawer: null,
 
-    isLogin: false,
-    identity: 0 //0: unlogin 1:Boss 2:DM
+    userIsLogin: false,
+    userType: 0, //0: unlogin 1:Boss 2:DM
+    userId: null,
+    userName: null
   },
   getters,
   mutations,

@@ -1,9 +1,13 @@
 export const setUser = ({ commit, store }, user) => {
   if (user) {
-    commit("changeLoginStatus", true);
-    commit("changeIdentity", 1);
+    commit("changeUserStatus", true);
+    commit("changeUserType", user.type);
+    commit("changeUserId", user.id);
+    commit("changeUserName", user.name);
   } else {
-    commit("changeLoginStatus", false);
-    commit("changeIdentity", 0);
+    commit("changeUserStatus", false);
+    commit("changeUserType", 0);
+    commit("changeUserId", null);
+    commit("changeUserName", null);
   }
 };

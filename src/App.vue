@@ -60,7 +60,7 @@ export default {
       return this.$store.state.drawer;
     },
     isLogin() {
-      return this.$store.state.isLogin;
+      return this.$store.state.userIsLogin;
     }
   }
 };

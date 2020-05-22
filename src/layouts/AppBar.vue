@@ -3,14 +3,18 @@
     <v-app-bar-nav-icon @click.stop="changeDrawerState" />
     <v-toolbar-title>{{ Title }}</v-toolbar-title>
     <v-spacer></v-spacer>
-    <v-tooltip left>
+    <v-menu v-model="menu" offset-y>
       <template v-slot:activator="{ on }">
-        <v-btn icon @click.stop="doLogout" v-on="on">
+        <v-btn text v-on="on">
           <v-icon>person</v-icon>
+          <span>{{ userName }}</span>
         </v-btn>
       </template>
-      <span>Logout</span>
-    </v-tooltip>
+      <v-btn text block v-on:click="doLogout">
+        <span>Logout</span>
+      </v-btn>
+    </v-menu>
+
     <v-tooltip left>
       <template v-slot:activator="{ on }">
         <v-btn icon @click.stop="switchTheme" v-on="on">
@@ -30,6 +34,9 @@ export default {
       required: true
     }
   },
+  data: () => ({
+    menu: false
+  }),
   methods: {
     doLogout: function() {
       this.$store.dispatch("setUser", null);
@@ -47,6 +54,9 @@ export default {
     },
     drawer: function() {
       return this.$store.state.drawer;
+    },
+    userName: function() {
+      return this.$store.state.userName;
     }
   }
 };
