@@ -43,8 +43,7 @@ export default {
   name: "Login",
   methods: {
     doLogin() {
-      this.$store.commit("changeLoginStatus", true);
-      this.$store.commit("changeIdentity", 1);
+      this.$store.dispatch("setUser", 1);
     }
   }
 };

@@ -32,8 +32,7 @@ export default {
   },
   methods: {
     doLogout: function() {
-      this.$store.commit("changeLoginStatus", false);
-      this.$store.commit("changeIdentity", 0);
+      this.$store.dispatch("setUser", null);
     },
     switchTheme: function() {
       this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
