@@ -30,6 +30,11 @@ export default new Router({
       path: "/login",
       name: "Login",
       component: resolve => require(["../views/Login"], resolve)
+    },
+    {
+      path: "*",
+      name: "Not Found",
+      component: resolve => require(["../views/404.vue"], resolve)
     }
   ]
 });
