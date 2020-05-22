@@ -3,9 +3,22 @@
     <v-app-bar-nav-icon @click.stop="changeDrawerState" />
     <v-toolbar-title>{{ Title }}</v-toolbar-title>
     <v-spacer></v-spacer>
-    <v-btn icon @click.stop="switchTheme">
-      <v-icon>{{ currentThemeIcon }}</v-icon>
-    </v-btn>
+    <v-tooltip left>
+      <template v-slot:activator="{ on }">
+        <v-btn icon @click.stop="doLogout" v-on="on">
+          <v-icon>person</v-icon>
+        </v-btn>
+      </template>
+      <span>Logout</span>
+    </v-tooltip>
+    <v-tooltip left>
+      <template v-slot:activator="{ on }">
+        <v-btn icon @click.stop="switchTheme" v-on="on">
+          <v-icon>{{ currentThemeIcon }}</v-icon>
+        </v-btn>
+      </template>
+      <span>Change Theme</span>
+    </v-tooltip>
   </v-app-bar>
 </template>
 
@@ -18,6 +31,10 @@ export default {
     }
   },
   methods: {
+    doLogout: function() {
+      this.$store.commit("changeLoginStatus", false);
+      this.$store.commit("changeIdentity", 0);
+    },
     switchTheme: function() {
       this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
     },
@@ -29,7 +46,7 @@ export default {
     currentThemeIcon: function() {
       return this.$vuetify.theme.dark ? "mdi-brightness-7" : "mdi-brightness-4";
     },
-    drawer() {
+    drawer: function() {
       return this.$store.state.drawer;
     }
   }

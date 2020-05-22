@@ -1,15 +1,19 @@
 <template>
-  <v-app id="inspire">
+  <v-app v-if="isLogin" id="inspire">
     <index-drawer :items="items"></index-drawer>
     <index-app-bar :Title="Title"></index-app-bar>
     <index-view></index-view>
     <index-footer></index-footer>
+  </v-app>
+  <v-app v-else id="inspire">
+    <login></login>
   </v-app>
 </template>
 
 <script>
 export default {
   components: {
+    Login: () => import("./views/Login"),
     IndexView: () => import("./layouts/View"),
     IndexAppBar: () => import("./layouts/AppBar"),
     IndexDrawer: () => import("./layouts/Drawer"),
@@ -54,6 +58,9 @@ export default {
   computed: {
     drawer() {
       return this.$store.state.drawer;
+    },
+    isLogin() {
+      return this.$store.state.isLogin;
     }
   }
 };
