@@ -67,6 +67,12 @@ export default {
       event.preventDefault();
       alert("Hi");
       this.$store.dispatch("setUser", { type: 1, id: 1, name: "Nicode" });
+      if (this.$route.query.redirect) {
+        let redirect = this.$route.query.redirect;
+        this.$router.push(redirect);
+      } else {
+        this.$router.push("/");
+      }
     }
   }
 };
