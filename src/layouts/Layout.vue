@@ -25,7 +25,7 @@ export default {
       {
         title: "员工管理",
         icon: "mdi-account",
-        route: "/t1"
+        route: "/employee_manage"
       },
       {
         title: "排班管理",
