@@ -13,6 +13,10 @@ export default new Router({
       component: resolve => require(["../layouts/Layout"], resolve),
       children: [
         {
+          path: "/employee_manage",
+          component: resolve => require(["../views/EmployeeManage"], resolve)
+        },
+        {
           path: "/",
           component: resolve => require(["../components/HelloWorld"], resolve)
         },
