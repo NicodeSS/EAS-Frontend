@@ -56,7 +56,7 @@ export default {
       return this.$store.state.drawer;
     },
     userName: function() {
-      return this.$store.state.userName;
+      return this.$store.state.userName || "Unknown";
     }
   }
 };
