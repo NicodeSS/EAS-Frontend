@@ -8,6 +8,7 @@
       item-key="uId"
       :loading="loading"
       loading-text="Loading... Please wait."
+      :no-data-text="errorMessage"
       :options.sync="options"
       :server-items-length="totalCount"
       show-select
@@ -115,9 +116,13 @@ export default {
       valid: true,
       loading: false,
       search: "",
-      options: {},
+      options: {
+        page: 1,
+        itemsPerPage: 15
+      },
       totalCount: 0,
       selected: [],
+      errorMessage: "",
       headers: [
         {
           text: "工号",
@@ -183,10 +188,7 @@ export default {
   watch: {
     options: {
       handler() {
-        this.getDataFromApi().then(data => {
-          this.items = data.items;
-          this.totalCount = data.count;
-        });
+        this.getDataFromApi();
       }
     },
     deep: true,
@@ -195,141 +197,24 @@ export default {
     }
   },
   mounted() {
-    this.getDataFromApi().then(data => {
-      this.items = data.items;
-      this.totalCount = data.count;
-    });
+    this.getDataFromApi();
   },
   methods: {
-    getDataFromApi() {
+    async getDataFromApi() {
       this.loading = true;
-      return new Promise((resolve, reject) => {
-        const { sortBy, sortDesc, page, itemsPerPage } = this.options;
-
-        let items = this.getItems();
-        const count = items.length;
-
-        if (sortBy.length === 1 && sortDesc.length === 1) {
-          items = items.sort((a, b) => {
-            const sortA = a[sortBy[0]];
-            const sortB = b[sortBy[0]];
-
-            if (sortDesc[0]) {
-              if (sortA < sortB) return 1;
-              if (sortA > sortB) return -1;
-              return 0;
-            } else {
-              if (sortA < sortB) return -1;
-              if (sortA > sortB) return 1;
-              return 0;
-            }
-          });
-        }
-
-        if (itemsPerPage > 0) {
-          items = items.slice((page - 1) * itemsPerPage, page * itemsPerPage);
-        }
-
-        setTimeout(() => {
-          this.loading = false;
-          resolve({
-            items,
-            count
-          });
-        }, 1000);
-      });
-    },
-    getItems() {
-      return [
-        {
-          uId: 1,
-          name: "Alex",
-          departmentId: 1,
-          departmentName: "销售部",
-          roleId: 0,
-          roleName: "员工"
-        },
-        {
-          uId: 2,
-          name: "Bob",
-          departmentId: 1,
-          departmentName: "销售部",
-          roleId: 0,
-          roleName: "员工"
-        },
-        {
-          uId: 3,
-          name: "Celia",
-          departmentId: 1,
-          departmentName: "销售部",
-          roleId: 0,
-          roleName: "员工"
-        },
-        {
-          uId: 4,
-          name: "David",
-          departmentId: 1,
-          departmentName: "销售部",
-          roleId: 0,
-          roleName: "员工"
-        },
-        {
-          uId: 5,
-          name: "Ella",
-          departmentId: 1,
-          departmentName: "销售部",
-          roleId: 0,
-          roleName: "员工"
-        },
-        {
-          uId: 6,
-          name: "Ford",
-          departmentId: 1,
-          departmentName: "销售部",
-          roleId: 0,
-          roleName: "员工"
-        },
-        {
-          uId: 7,
-          name: "Gaussian",
-          departmentId: 1,
-          departmentName: "销售部",
-          roleId: 0,
-          roleName: "员工"
-        },
-        {
-          uId: 8,
-          name: "Helen",
-          departmentId: 1,
-          departmentName: "销售部",
-          roleId: 0,
-          roleName: "员工"
-        },
-        {
-          uId: 9,
-          name: "Ivan",
-          departmentId: 1,
-          departmentName: "销售部",
-          roleId: 0,
-          roleName: "员工"
-        },
-        {
-          uId: 10,
-          name: "Jessica",
-          departmentId: 1,
-          departmentName: "销售部",
-          roleId: 0,
-          roleName: "员工"
-        },
-        {
-          uId: 11,
-          name: "Kevin",
-          departmentId: 1,
-          departmentName: "销售部",
-          roleId: 0,
-          roleName: "员工"
-        }
-      ];
+      try {
+        let result = await this.$http.get("/test.json", {
+          page: this.options.page,
+          limit: this.options.itemsPerPage
+        });
+        this.totalCount = result.data.data.count;
+        this.items = result.data.data.items;
+      } catch (err) {
+        this.items = [];
+        this.errorMessage = err.data.msg ? err.data.msg : "与服务器连接出错";
+      } finally {
+        this.loading = false;
+      }
     },
     editItem(item) {
       this.editedIndex = this.items.indexOf(item);
