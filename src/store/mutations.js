@@ -6,14 +6,18 @@ export const changeUserStatus = (state, status) => {
   state.userIsLogin = status;
 };
 
-export const changeUserType = (state, type) => {
-  state.userType = type;
-};
-
 export const changeUserId = (state, id) => {
   state.userId = id;
 };
 
+export const changeUserRole = (state, type) => {
+  state.userRole = type;
+};
+
 export const changeUserName = (state, username) => {
   state.userName = username;
+};
+
+export const changeUserToken = (state, token) => {
+  state.userToken = token;
 };

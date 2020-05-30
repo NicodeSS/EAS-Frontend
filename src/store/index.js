@@ -12,9 +12,10 @@ export default new Vuex.Store({
     drawer: null,
 
     userIsLogin: false,
-    userType: 0, //0: unlogin 1:Boss 2:DM
+    userRole: 0, //0: logout 1:DM 2:Boss
     userId: null,
-    userName: null
+    userName: null,
+    userToken: null
   },
   getters,
   mutations,
