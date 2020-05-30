@@ -9,6 +9,9 @@
                 <v-toolbar-title>员工管理系统 - 登陆</v-toolbar-title>
               </v-toolbar>
               <v-card-text>
+                <v-alert type="error" v-show="showErr">
+                  {{ errorMsg }}
+                </v-alert>
                 <v-form v-model="valid">
                   <v-text-field
                     label="工号"
@@ -35,7 +38,7 @@
                   :disabled="!valid"
                   color="primary"
                   @click="doLogin($event)"
-                  >Login</v-btn
+                  >登陆</v-btn
                 >
               </v-card-actions>
             </v-card>
@@ -53,6 +56,8 @@ export default {
     valid: false,
     username: "",
     password: "",
+    errorMsg: "",
+    showErr: false,
     nameRules: [
       v => !!v || "请输入用户名",
       v => (v.length >= 6 && v.length <= 16) || "用户名长度为6-16个字符"
@@ -63,15 +68,35 @@ export default {
     ]
   }),
   methods: {
-    doLogin(event) {
+    async doLogin(event) {
       event.preventDefault();
-      alert("Hi");
-      this.$store.dispatch("setUser", { type: 1, id: 1, name: "Nicode" });
-      if (this.$route.query.redirect) {
-        let redirect = this.$route.query.redirect;
-        this.$router.push(redirect);
-      } else {
-        this.$router.push("/");
+      this.showErr = false;
+      try {
+        let result = await this.$http.post("/manager/login.do", {
+          uId: this.username,
+          password: this.password
+        });
+        let content = result.data.data;
+        let user = {
+          id: content.uid,
+          name: content.uName,
+          role: content.role,
+          token: content.token
+        };
+        console.log(content);
+        this.$store.dispatch("setUser", user);
+        alert("欢迎登陆，" + this.$store.getters.userName);
+
+        if (this.$route.query.redirect) {
+          let redirect = this.$route.query.redirect;
+          this.$router.push(redirect);
+        } else {
+          this.$router.push("/");
+        }
+      } catch (err) {
+        console.error(err);
+        this.errorMsg = err.data ? err.data.msg : "服务器错误";
+        this.showErr = true;
       }
     }
   }
