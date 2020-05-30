@@ -1,24 +1,26 @@
 import axios from "axios";
 
 let http = axios.create({
-  baseURL: "http://www.nicode.top:10080/",
+  baseURL: "http://39.102.32.251:800/",
   withCredentials: false,
-  headers: {
-    "Content-Type": "application/x-www-form-urlencoded;charset=utf-8"
-  },
-  transformRequest: [
-    function(data) {
-      let newData = "";
-      for (let i in data) {
-        if (data.hasOwnProperty(i) === true) {
-          newData +=
-            encodeURIComponent(i) + "=" + encodeURIComponent(data[i]) + "&";
-        }
-      }
-      return newData;
-    }
-  ]
+  timeout: 10000
 });
+
+http.interceptors.request.use(
+  config => {
+    if (config.method === "POST") {
+      config.headers["Content-Type"] = "application/json;charset=utf-8";
+    }
+    if (localStorage.getItem("token")) {
+      config.headers.Authorization = localStorage.getItem("token");
+    }
+    return config;
+  },
+  error => {
+    alert("错误的传参");
+    return Promise.reject(error);
+  }
+);
 
 export default {
   get: function(url, params) {

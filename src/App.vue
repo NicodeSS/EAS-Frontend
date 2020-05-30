@@ -12,11 +12,9 @@ export default {
   }
 };
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   if (to.matched.some(record => record.meta.requireAuth)) {
-    console.log("need login!");
-    console.log(store.state.userIsLogin);
-    if (store.state.userIsLogin) {
+    if (await store.dispatch("validateUser")) {
       next();
     } else {
       next({

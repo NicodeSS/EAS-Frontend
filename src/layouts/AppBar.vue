@@ -40,6 +40,7 @@ export default {
   methods: {
     doLogout: function() {
       this.$store.dispatch("setUser", null);
+      location.reload();
     },
     switchTheme: function() {
       this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
@@ -56,7 +57,7 @@ export default {
       return this.$store.state.drawer;
     },
     userName: function() {
-      return this.$store.state.userName || "Unknown";
+      return this.$store.state.userName || "未登陆";
     }
   }
 };
