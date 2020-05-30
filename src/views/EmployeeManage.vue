@@ -1,10 +1,15 @@
 <template>
   <v-responsive>
+    <v-snackbar v-model="snackbar">
+      {{ snackbarMsg }}
+      <v-btn color="primary" text @click="snackbar = false">
+        Close
+      </v-btn>
+    </v-snackbar>
     <v-data-table
       v-model="selected"
       :headers="headers"
       :items="items"
-      :search="search"
       item-key="uId"
       :loading="loading"
       loading-text="Loading... Please wait."
@@ -31,7 +36,8 @@
                         <v-text-field
                           v-model="editedItem.uId"
                           label="工号"
-                          disabled
+                          :rules="rules.uid"
+                          required
                         ></v-text-field>
                       </v-col>
                       <v-col cols="12" sm="6">
@@ -112,7 +118,7 @@
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
           <v-text-field
-            v-model="search"
+            v-model="keyword"
             append-icon="mdi-magnify"
             label="搜索"
             single-line
@@ -135,9 +141,10 @@ export default {
     return {
       dialog: false,
       dialog_del: false,
+      snackbar: false,
       valid: true,
       loading: false,
-      search: "",
+      keyword: "",
       options: {
         page: 1,
         itemsPerPage: 15
@@ -145,6 +152,7 @@ export default {
       totalCount: 0,
       selected: [],
       errorMessage: "",
+      snackbarMsg: "",
       headers: [
         {
           text: "工号",
@@ -159,7 +167,7 @@ export default {
       items: [],
       editedIndex: -1,
       editedItem: {
-        uId: -1,
+        uId: "",
         name: "",
         departmentId: -1,
         departmentName: "",
@@ -167,7 +175,7 @@ export default {
         roleName: ""
       },
       defaultItem: {
-        uId: -1,
+        uId: "",
         name: "",
         departmentId: -1,
         departmentName: "",
@@ -180,6 +188,7 @@ export default {
         { id: 3, name: "维修部" }
       ],
       rules: {
+        uid: [v => v.length >= 4 || "工号至少4位字符"],
         name: [v => !!v || "请输入姓名"],
         department: [v => (v && v !== -1) || "请选择部门"],
         role: [v => (v >= 0 && v <= 2) || "请选择职位"]
@@ -191,13 +200,14 @@ export default {
       return this.editedIndex === -1 ? "新增员工" : "编辑员工";
     },
     roles() {
-      if (this.$store.getters.userType === 2)
+      if (this.$store.getters.userRole === 2)
         return [
           { name: "部门主管", id: 1 },
           { name: "员工", id: 0 }
         ];
-      //TODO: restrict condition when login module works
-      else return [{ name: "员工", id: 0 }];
+      else if (this.$store.getters.userRole === 1)
+        return [{ name: "员工", id: 0 }];
+      else return [];
     },
     selectedUids() {
       let uids = [];
@@ -209,6 +219,11 @@ export default {
   },
   watch: {
     options: {
+      handler() {
+        this.getDataFromApi();
+      }
+    },
+    keyword: {
       handler() {
         this.getDataFromApi();
       }
@@ -225,15 +240,16 @@ export default {
     async getDataFromApi() {
       this.loading = true;
       try {
-        let result = await this.$http.get("/test.json", {
+        let result = await this.$http.get("/staff/employee_list.do", {
           page: this.options.page,
-          limit: this.options.itemsPerPage
+          limit: this.options.itemsPerPage,
+          keyword: this.keyword
         });
         this.totalCount = result.data.data.count;
         this.items = result.data.data.items;
       } catch (err) {
         this.items = [];
-        this.errorMessage = err.data.msg ? err.data.msg : "与服务器连接出错";
+        this.errorMessage = err.data ? err.data.msg : "与服务器连接出错";
       } finally {
         this.loading = false;
       }
@@ -245,13 +261,25 @@ export default {
     },
     async deleteItems(uids) {
       console.log(uids);
-      let result = await this.$http.post("/staff/employee_delete", {
-        uId: this.selectedUids
-      });
-      //TODO: realize delete employees
+      try {
+        let result = await this.$http.post("/staff/employee_delete.do", {
+          uId: uids
+        });
+        this.snackbarMsg = result.data.msg;
+        this.snackbar = true;
+        for (let uid of uids)
+          for (let i = 0; i < this.items.length; i++)
+            if (this.items[i].uId === uid) this.items.splice(i, 1);
+      } catch (err) {
+        this.snackbarMsg = err.data ? err.data.msg : "删除失败，服务器错误";
+        this.snackbar = true;
+      } finally {
+        this.dialog_del = false;
+      }
     },
     deleteItem(item) {
-      confirm("确定要删除此用户吗?") && this.deleteItems([item.uId]);
+      confirm("确定要删除员工 " + item.name + " 吗?") &&
+        this.deleteItems([item.uId]);
     },
     excelImport() {
       //TODO: realize import employee from Excel
@@ -272,21 +300,37 @@ export default {
       });
     },
 
-    save() {
-      this.editedItem.departmentName = this.getNameById(
-        this.departments,
-        this.editedItem.departmentId
-      );
-      this.editedItem.roleName = this.getNameById(
-        this.roles,
-        this.editedItem.roleId
-      );
-      if (this.editedIndex > -1) {
-        Object.assign(this.items[this.editedIndex], this.editedItem);
-      } else {
-        this.items.push(this.editedItem);
+    async save() {
+      try {
+        let url =
+          this.editedIndex === -1
+            ? "/staff/employee_add.do"
+            : "/staff/employee_edit.do";
+        let result = await this.$http.post(url, this.editedItem);
+        this.snackbarMsg = result.data.msg;
+        this.snackbar = true;
+
+        this.editedItem.departmentName = this.getNameById(
+          this.departments,
+          this.editedItem.departmentId
+        );
+
+        this.editedItem.roleName = this.getNameById(
+          this.roles,
+          this.editedItem.roleId
+        );
+
+        if (this.editedIndex > -1) {
+          Object.assign(this.items[this.editedIndex], this.editedItem);
+        } else {
+          this.items.push(this.editedItem);
+        }
+        this.close();
+      } catch (err) {
+        console.error(err);
+        this.snackbarMsg = err.data ? err.data.msg : "操作失败";
+        this.snackbar = true;
       }
-      this.close();
     }
   }
 };
