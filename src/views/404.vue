@@ -9,8 +9,14 @@
                 404 Not Found...
               </v-card-title>
               <v-card-text>
-                Oops.. We can't find this page.
+                这个页面不见了……可能是飞往火星了^_^
               </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" text @click="back()"
+                  >返回上一页</v-btn
+                >
+              </v-card-actions>
             </v-card>
           </v-col>
         </v-row>
@@ -21,7 +27,12 @@
 
 <script>
 export default {
-  name: "404"
+  name: "NotFound",
+  methods: {
+    back() {
+      this.$router.go(-1);
+    }
+  }
 };
 </script>
 
