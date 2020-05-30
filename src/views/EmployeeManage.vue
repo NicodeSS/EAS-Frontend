@@ -15,9 +15,9 @@
     >
       <template v-slot:top>
         <v-toolbar flat>
-          <v-dialog class="mx-1" v-model="dialog" max-width="500px">
+          <v-dialog v-model="dialog" max-width="500px">
             <template v-slot:activator="{ on }">
-              <v-btn color="primary" v-on="on">添加员工</v-btn>
+              <v-btn class="mx-1" color="primary" v-on="on">添加员工</v-btn>
             </template>
             <v-card>
               <v-card-title>
@@ -82,9 +82,30 @@
             </v-card>
           </v-dialog>
 
-          <v-btn class="mx-1" color="error" @click="deleteItems(selectedUids)"
-            >删除选定员工</v-btn
-          >
+          <v-dialog v-model="dialog_del" max-width="500px">
+            <template v-slot:activator="{ on }">
+              <v-btn class="mx-1" color="error" v-on="on">删除选定员工</v-btn>
+            </template>
+            <v-card>
+              <v-card-title>
+                <span class="headline">删除员工</span>
+              </v-card-title>
+              <v-card-text>确定要删除员工吗？</v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" text @click="dialog_del = false"
+                  >取消</v-btn
+                >
+                <v-btn
+                  color="blue darken-1"
+                  text
+                  @click="deleteItems(selectedUids)"
+                  >确定</v-btn
+                >
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+
           <v-btn class="mx-1" color="teal" @click="excelImport"
             >Excel 导入</v-btn
           >
@@ -113,6 +134,7 @@ export default {
   data() {
     return {
       dialog: false,
+      dialog_del: false,
       valid: true,
       loading: false,
       search: "",
@@ -221,13 +243,15 @@ export default {
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
-    deleteItem(item) {
-      const index = this.items.indexOf(item);
-      confirm("确定要删除此用户吗?") && this.items.splice(index, 1);
-    },
-    deleteItems(uids) {
+    async deleteItems(uids) {
       console.log(uids);
+      let result = await this.$http.post("/staff/employee_delete", {
+        uId: this.selectedUids
+      });
       //TODO: realize delete employees
+    },
+    deleteItem(item) {
+      confirm("确定要删除此用户吗?") && this.deleteItems([item.uId]);
     },
     excelImport() {
       //TODO: realize import employee from Excel
