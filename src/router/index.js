@@ -13,20 +13,16 @@ export default new Router({
       component: resolve => require(["../layouts/Layout"], resolve),
       children: [
         {
-          path: "/employee_manage",
-          component: resolve => require(["../views/EmployeeManage"], resolve)
-        },
-        {
           path: "/",
           component: resolve => require(["../components/HelloWorld"], resolve)
         },
         {
-          path: "/t1",
-          component: resolve => require(["../components/HelloWorld"], resolve)
+          path: "/employee_manage",
+          component: resolve => require(["../views/EmployeeManage"], resolve)
         },
         {
-          path: "/t2",
-          component: resolve => require(["../components/HelloWorld2"], resolve)
+          path: "/approval_manage",
+          component: resolve => require(["../views/ApprovalManage"], resolve)
         }
       ]
     },
