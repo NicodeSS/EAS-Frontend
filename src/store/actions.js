@@ -29,7 +29,6 @@ export const validateUser = async ({ dispatch }) => {
         role: content.role,
         token: content.token
       };
-      console.log(content);
       localStorage.setItem("token", user.token);
       await dispatch("setUser", user);
       return true;

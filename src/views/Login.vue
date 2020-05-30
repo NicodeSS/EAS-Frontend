@@ -85,7 +85,6 @@ export default {
         };
         console.log(content);
         this.$store.dispatch("setUser", user);
-        alert("欢迎登陆，" + this.$store.getters.userName);
 
         if (this.$route.query.redirect) {
           let redirect = this.$route.query.redirect;
