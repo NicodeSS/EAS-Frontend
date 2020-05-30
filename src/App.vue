@@ -14,8 +14,6 @@ export default {
 
 router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requireAuth)) {
-    console.log("need login!");
-    console.log(store.state.userIsLogin);
     if (store.state.userIsLogin) {
       next();
     } else {
