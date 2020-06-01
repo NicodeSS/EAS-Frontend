@@ -112,9 +112,41 @@
             </v-card>
           </v-dialog>
 
-          <v-btn class="mx-1" color="teal" @click="excelImport"
-            >Excel 导入</v-btn
-          >
+          <v-dialog v-model="dialog_import" max-width="500px">
+            <template v-slot:activator="{ on }">
+              <v-btn class="mx-1" color="teal" v-on="on">Excel 导入</v-btn>
+            </template>
+            <v-card>
+              <v-card-title>
+                <span class="headline">Excel 导入</span>
+              </v-card-title>
+              <v-card-text>
+                <v-container>
+                  <v-form>
+                    <v-row>
+                      <v-col cols="12">
+                        <v-file-input
+                          v-model="file"
+                          accept=".xlsx,.xls"
+                          label="File input"
+                        ></v-file-input>
+                      </v-col>
+                    </v-row>
+                  </v-form>
+                </v-container>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" text @click="dialog_import = false"
+                  >取消</v-btn
+                >
+                <v-btn color="blue darken-1" text @click="excelImport"
+                  >确定</v-btn
+                >
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
           <v-text-field
@@ -141,6 +173,7 @@ export default {
     return {
       dialog: false,
       dialog_del: false,
+      dialog_import: false,
       snackbar: false,
       valid: true,
       loading: false,
@@ -183,6 +216,7 @@ export default {
         roleName: ""
       },
       departments: [],
+      file: [],
       rules: {
         uid: [v => v.length >= 4 || "工号至少4位字符"],
         name: [v => !!v || "请输入姓名"],
@@ -280,8 +314,23 @@ export default {
       confirm("确定要删除员工 " + item.name + " 吗?") &&
         this.deleteItems([item.uId]);
     },
-    excelImport() {
-      //TODO: realize import employee from Excel
+    async excelImport() {
+      let formData = new FormData();
+      formData.append("file", this.file);
+      try {
+        let result = await this.$http.post(
+          "/staff/bulk_employee_add.do",
+          formData
+        );
+        this.snackbarMsg = result.data.msg;
+        this.snackbar = true;
+      } catch (err) {
+        this.snackbarMsg = err.data ? err.data.msg : "导入失败，服务器错误";
+        this.snackbar = true;
+      } finally {
+        this.file = [];
+        this.dialog_import = false;
+      }
     },
     getNameById(list, id) {
       for (let item of list) {
