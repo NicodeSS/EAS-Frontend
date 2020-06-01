@@ -1,4 +1,7 @@
+// Layout state
+export const siteTitle = state => state.siteTitle;
 export const drawer = state => state.drawer;
+export const menu = state => state.menu;
 
 // User state
 export const userStatus = state => state.userIsLogin;

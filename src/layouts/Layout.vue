@@ -1,7 +1,7 @@
 <template>
   <v-app id="inspire">
-    <index-drawer :items="items"></index-drawer>
-    <index-app-bar :Title="Title"></index-app-bar>
+    <index-drawer :items="menu"></index-drawer>
+    <index-app-bar :Title="title"></index-app-bar>
     <index-view></index-view>
     <index-footer></index-footer>
   </v-app>
@@ -19,42 +19,15 @@ export default {
   props: {
     source: String
   },
-  data: () => ({
-    Title: "EAS",
-    items: [
-      {
-        title: "员工管理",
-        icon: "mdi-account",
-        route: "/employee_manage"
-      },
-      {
-        title: "排班管理",
-        icon: "mdi-account-clock",
-        route: "/t2"
-      },
-      {
-        title: "排班展示",
-        icon: "mdi-calendar-month-outline",
-        route: "/"
-      },
-      {
-        title: "活动审批",
-        icon: "mdi-check-underline",
-        route: "/"
-      },
-      {
-        title: "考勤管理",
-        icon: "mdi-check-outline",
-        route: "/"
-      }
-    ]
-  }),
   computed: {
-    drawer() {
-      return this.$store.state.drawer;
+    title() {
+      return this.$store.getters.siteTitle;
     },
-    isLogin() {
-      return this.$store.state.userIsLogin;
+    drawer() {
+      return this.$store.getters.drawer;
+    },
+    menu() {
+      return this.$store.getters.menu;
     }
   }
 };
