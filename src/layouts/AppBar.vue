@@ -40,6 +40,7 @@ export default {
   methods: {
     doLogout: function() {
       this.$store.dispatch("setUser", null);
+      localStorage.removeItem("token");
       location.reload();
     },
     switchTheme: function() {
