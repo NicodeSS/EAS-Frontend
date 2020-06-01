@@ -55,10 +55,10 @@ export default {
       return this.$vuetify.theme.dark ? "mdi-brightness-7" : "mdi-brightness-4";
     },
     drawer: function() {
-      return this.$store.state.drawer;
+      return this.$store.getters.drawer;
     },
     userName: function() {
-      return this.$store.state.userName || "未登陆";
+      return this.$store.getters.userName || "未登陆";
     }
   }
 };
