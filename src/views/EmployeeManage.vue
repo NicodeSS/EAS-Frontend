@@ -182,11 +182,7 @@ export default {
         roleId: -1,
         roleName: ""
       },
-      departments: [
-        { id: 1, name: "销售部" },
-        { id: 2, name: "售后部" },
-        { id: 3, name: "维修部" }
-      ],
+      departments: [],
       rules: {
         uid: [v => v.length >= 4 || "工号至少4位字符"],
         name: [v => !!v || "请输入姓名"],
@@ -240,6 +236,10 @@ export default {
     async getDataFromApi() {
       this.loading = true;
       try {
+        if (this.departments.length === 0) {
+          let dresult = await this.$http.get("/manager/department_list.do");
+          this.departments = dresult.data.data.items;
+        }
         let result = await this.$http.get("/staff/employee_list.do", {
           page: this.options.page,
           limit: this.options.itemsPerPage,
@@ -260,7 +260,6 @@ export default {
       this.dialog = true;
     },
     async deleteItems(uids) {
-      console.log(uids);
       try {
         let result = await this.$http.post("/staff/employee_delete.do", {
           uId: uids
