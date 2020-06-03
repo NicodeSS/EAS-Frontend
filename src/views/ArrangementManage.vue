@@ -22,9 +22,156 @@
             >批量排班</v-btn
           >
           <!--TODO：临时加班按钮-->
-          <v-btn v-if="isBoss" class="mx-1" color="teal" @click="tempOverwork"
-            >临时加班</v-btn
+          <v-dialog
+            v-if="isBoss"
+            v-model="dialog_overwork"
+            persistent
+            max-width="500px"
           >
+            <template v-slot:activator="{ on }">
+              <v-btn class="mx-1" color="warn" v-on="on">临时加班</v-btn>
+            </template>
+            <v-card>
+              <v-card-title>
+                <span class="headline">临时全体加班</span>
+              </v-card-title>
+              <v-card-text>
+                <v-row>
+                  <v-col cols="6">
+                    <v-menu
+                      ref="menu"
+                      v-model="menu_over[0]"
+                      :close-on-content-click="false"
+                      :nudge-right="40"
+                      transition="scale-transition"
+                      offset-y
+                      min-width="290px"
+                    >
+                      <template v-slot:activator="{ on }">
+                        <v-text-field
+                          v-model="time_over[0]"
+                          label="开始日期"
+                          prepend-icon="access_time"
+                          readonly
+                          v-on="on"
+                        ></v-text-field>
+                      </template>
+                      <v-date-picker
+                        v-model="time_over[0]"
+                        :max="time_over[2]"
+                        no-title
+                        scrollable
+                        locale="zh-cn"
+                      >
+                      </v-date-picker>
+                    </v-menu>
+                  </v-col>
+                  <v-col cols="6">
+                    <v-menu
+                      ref="menu"
+                      v-model="menu_over[1]"
+                      :close-on-content-click="false"
+                      :nudge-right="40"
+                      transition="scale-transition"
+                      offset-y
+                      max-width="290px"
+                      min-width="290px"
+                    >
+                      <template v-slot:activator="{ on }">
+                        <v-text-field
+                          v-model="time_over[1]"
+                          label="开始时间"
+                          prepend-icon="access_time"
+                          readonly
+                          v-on="on"
+                        ></v-text-field>
+                      </template>
+                      <v-time-picker
+                        v-if="menu_over[1]"
+                        v-model="time_over[1]"
+                        :max="time_end"
+                        format="24hr"
+                        full-width
+                      ></v-time-picker>
+                    </v-menu>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col cols="6">
+                    <v-menu
+                      ref="menu"
+                      v-model="menu_over[2]"
+                      :close-on-content-click="false"
+                      :nudge-right="40"
+                      transition="scale-transition"
+                      offset-y
+                      min-width="290px"
+                    >
+                      <template v-slot:activator="{ on }">
+                        <v-text-field
+                          v-model="time_over[2]"
+                          label="结束日期"
+                          prepend-icon="access_time"
+                          readonly
+                          v-on="on"
+                        ></v-text-field>
+                      </template>
+                      <v-date-picker
+                        v-model="time_over[2]"
+                        :min="time_over[0]"
+                        no-title
+                        scrollable
+                        locale="zh-cn"
+                      >
+                      </v-date-picker>
+                    </v-menu>
+                  </v-col>
+                  <v-col cols="6">
+                    <v-menu
+                      ref="menu"
+                      v-model="menu_over[3]"
+                      :close-on-content-click="false"
+                      :nudge-right="40"
+                      transition="scale-transition"
+                      offset-y
+                      max-width="290px"
+                      min-width="290px"
+                    >
+                      <template v-slot:activator="{ on }">
+                        <v-text-field
+                          v-model="time_over[3]"
+                          label="结束时间"
+                          prepend-icon="access_time"
+                          readonly
+                          v-on="on"
+                        ></v-text-field>
+                      </template>
+                      <v-time-picker
+                        v-if="menu_over[3]"
+                        v-model="time_over[3]"
+                        :min="time_begin"
+                        format="24hr"
+                        full-width
+                      ></v-time-picker>
+                    </v-menu>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" text @click="cancelOverwork"
+                  >取消</v-btn
+                >
+                <v-btn
+                  color="blue darken-1"
+                  text
+                  :disabled="overwork_valid"
+                  @click="tempOverwork"
+                  >确定</v-btn
+                >
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
 
           <v-dialog v-model="dialog_arr" persistent max-width="1000px">
             <v-card>
@@ -36,10 +183,13 @@
                   v-if="batchEnabled"
                   v-model="selectedEmployees"
                   :items="employees"
+                  item-text="name"
+                  item-value="uId"
                   attach
                   chips
                   label="需排班的员工"
                   multiple
+                  required
                 ></v-select>
               </v-card-text>
               <v-tabs v-model="tab" color="primary" dark>
@@ -201,7 +351,6 @@
                     >
                   </v-card-actions>
                 </v-tab-item>
-
                 <v-tab-item :value="'tab-2'">
                   <v-card-text>
                     <v-container>
@@ -230,7 +379,6 @@
               </v-tabs>
             </v-card>
           </v-dialog>
-
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
           <v-text-field
@@ -262,11 +410,11 @@ export default {
       tab: null,
       dialog_arr: false,
       dialog_shift: false,
+      dialog_overwork: false,
       snackbar: false,
       snackbarMsg: "",
       tmpName: "",
       batchEnabled: false,
-      selectedEmployees: [],
       employees: [
         "t1",
         "t2",
@@ -283,6 +431,7 @@ export default {
         "t6",
         "t7"
       ],
+      selectedEmployees: [],
       defaultArrangement: [
         { times: 0 },
         { times: 0 },
@@ -294,12 +443,11 @@ export default {
       ],
 
       loading: false,
-      totalCount: 0,
-      keyword: "",
       options: {
         page: 1,
         itemsPerPage: 15
       },
+      keyword: "",
       headers: [
         {
           text: "工号",
@@ -309,9 +457,10 @@ export default {
         { text: "姓名", value: "name" },
         { text: "部门", value: "departmentName" },
         { text: "职位", value: "roleName" },
-        { text: "当前排班", value: "currentArrangement" },
+        { text: "当前排班", value: "preview" },
         { text: "操作", value: "actions" }
       ],
+      totalCount: 0,
       items: [],
       errMsg: "",
 
@@ -326,9 +475,13 @@ export default {
         { text: "操作", value: "actions" }
       ],
       items_arr: [],
-      errMsg_arr: "NoData",
+      errMsg_arr: "无排班数据",
 
       loading_tmp: false,
+      options_tmp: {
+        page: 1,
+        itemsPerPage: 15
+      },
       headers_tmp: [
         {
           text: "模版名",
@@ -337,15 +490,20 @@ export default {
         },
         { text: "操作", value: "actions" }
       ],
+      totalCount_tmp: 0,
       items_tmp: [],
-      errMsg_tmp: "NoData",
+      errMsg_tmp: "数据库中无排班模版",
 
       arrData: [],
+      editIndex: -1,
       editItem: null,
       shiftIndex: -1,
       shiftNumber: 0,
       time: [null, null, null, null, null, null, null, null],
-      menu: [false, false, false, false, false, false, false]
+      menu: [false, false, false, false, false, false, false],
+
+      time_over: [null, null, null, null],
+      menu_over: [false, false, false, false]
     };
   },
   computed: {
@@ -363,9 +521,47 @@ export default {
     },
     dialog_arr_title() {
       return this.batchEnabled ? "批量排班" : "排班";
+    },
+    time_begin() {
+      if (
+        this.time_over[0] < this.time_over[2] ||
+        !this.time_over[0] ||
+        !this.time_over[2]
+      )
+        return "00:00";
+      else if (this.time_over[0] === this.time_over[2])
+        return this.time_over[1];
+      else return "23:59";
+    },
+    time_end() {
+      if (
+        this.time_over[0] < this.time_over[2] ||
+        !this.time_over[0] ||
+        !this.time_over[2]
+      )
+        return "23:59";
+      else if (this.time_over[0] === this.time_over[2])
+        return this.time_over[3];
+      else return "00:00";
+    },
+    overwork_valid() {
+      return !(
+        this.time_over[0] < this.time_over[2] ||
+        (this.time_over[0] === this.time_over[2] &&
+          this.time_over[1] < this.time_over[3])
+      );
     }
   },
   watch: {
+    items: {
+      handler() {
+        for (let i in this.items) {
+          this.items[i].preview = this.generatePreview(
+            this.items[i].arrangements
+          );
+        }
+      }
+    },
     arrData: {
       handler() {
         this.items_arr = this.parseData(this.arrData);
@@ -373,24 +569,29 @@ export default {
     },
     options: {
       handler() {
-        this.getEmployees();
+        this.getOverview();
       }
     },
     keyword: {
       handler() {
-        this.getEmployees();
+        this.getOverview();
+      }
+    },
+    options_tmp: {
+      handler() {
+        this.getTemplateList();
       }
     },
     deep: true
   },
   mounted() {
-    this.getEmployees();
+    this.getOverview();
   },
   methods: {
-    async getEmployees() {
+    async getOverview() {
       this.loading = true;
       try {
-        let result = await this.$http.get("/staff/employee_list.do", {
+        let result = await this.$http.get("/schedule/arrangement_list.do", {
           page: this.options.page,
           limit: this.options.itemsPerPage,
           keyword: this.keyword
@@ -404,62 +605,47 @@ export default {
         this.loading = false;
       }
     },
-    getTestData() {
-      return [
-        {
-          times: 3,
-          durations: ["08:00-12:00", "13:00-17:00", "18:00-22:00"]
-        },
-        { times: 2, durations: ["08:00-12:00", "13:00-17:00"] },
-        { times: 1, durations: ["08:00-20:00"] },
-        { times: 2, durations: ["08:00-12:00", "13:00-17:00"] },
-        {
-          times: 3,
-          durations: ["08:00-12:00", "13:00-17:00", "18:00-22:00"]
-        },
-        { times: 0, durations: [] },
-        { times: 0, durations: [] }
-      ];
+    async getEmployeeList() {
+      try {
+        let result = await this.$http.get("/manager/employee_full_list.do");
+        this.employees = result.data.data.items;
+      } catch (err) {
+        this.employees = [];
+        alert("无法获取员工列表!");
+      }
     },
-    getTestTmp() {
-      return [
-        {
-          name: "测试模版1",
-          template: [
-            {
-              times: 3,
-              durations: ["08:00-12:00", "13:00-17:00", "18:00-22:00"]
-            },
-            { times: 2, durations: ["08:00-12:00", "13:00-17:00"] },
-            { times: 1, durations: ["08:00-20:00"] },
-            { times: 2, durations: ["08:00-12:00", "13:00-17:00"] },
-            {
-              times: 3,
-              durations: ["08:00-12:00", "13:00-17:00", "18:00-22:00"]
-            },
-            { times: 0, durations: [] },
-            { times: 0, durations: [] }
-          ]
-        },
-        {
-          name: "测试模版2",
-          template: [
-            {
-              times: 3,
-              durations: ["08:00-12:00", "13:00-17:00", "18:00-22:00"]
-            },
-            { times: 2, durations: ["08:00-12:00", "13:00-17:00"] },
-            { times: 1, durations: ["08:00-20:00"] },
-            { times: 2, durations: ["08:00-12:00", "13:00-17:00"] },
-            {
-              times: 3,
-              durations: ["08:00-12:00", "13:00-17:00", "18:00-22:00"]
-            },
-            { times: 0, durations: [] },
-            { times: 0, durations: [] }
-          ]
-        }
-      ];
+    async getTemplateList() {
+      this.loading_tmp = true;
+      try {
+        let result = await this.$http.get("/template/template_list.do", {
+          page: this.options_tmp.page,
+          limit: this.options_tmp.itemsPerPage
+        });
+        this.totalCount_tmp = result.data.data.count;
+        this.items_tmp = result.data.data.items;
+      } catch (err) {
+        this.totalCount_tmp = 0;
+        this.items_tmp = [];
+        this.errMsg_tmp = err.data ? err.data.msg : "与服务器连接出错";
+      } finally {
+        this.loading_tmp = false;
+      }
+    },
+    async saveTemplate() {
+      let temp = {
+        name: this.tmpName,
+        arrangement: this.arrData
+      };
+      console.log(temp);
+      try {
+        let result = await this.$http.post("/template/template_add.do", temp);
+        this.snackbarMsg = result.data.msg;
+        this.snackbar = true;
+      } catch (err) {
+        console.log(err);
+        this.snackbarMsg = err.data ? err.data.msg : "保存模版失败：服务器错误";
+        this.snackbar = true;
+      }
     },
     parseData(data) {
       let newData = [];
@@ -478,63 +664,85 @@ export default {
       }
       return newData;
     },
+    generatePreview(arrangement) {
+      let options = ["休", "一", "二", "三"];
+      let str = "";
+      for (let i in arrangement) {
+        str += options[arrangement[i].times];
+      }
+      return str;
+    },
     batchArrange() {
       this.batchEnabled = true;
+      this.getEmployeeList();
+      this.getTemplateList();
+      this.editIndex = -1;
+      this.editItem = [];
       this.arrData = this.defaultArrangement;
       this.items_arr = this.parseData(this.arrData);
-      if (this.items_tmp.length === 0) {
-        this.items_tmp = this.getTestTmp();
-      }
       this.dialog_arr = true;
     },
-    tempOverwork() {},
+    cancelOverwork() {
+      this.time_over = [null, null, null, null];
+      this.dialog_overwork = false;
+    },
+    async tempOverwork() {
+      let begin = this.time_over[0] + " " + this.time_over[1];
+      let end = this.time_over[2] + " " + this.time_over[3];
+      try {
+        let result = await this.$http.post("/schedule/overwork_create.do", {
+          begin: begin,
+          end: end
+        });
+        this.snackbarMsg = result.data.msg;
+        this.snackbar = true;
+      } catch (err) {
+        console.log(err);
+        this.snackbarMsg = err.data ? err.data.msg : "创建加班失败：服务器错误";
+        this.snackbar = true;
+      }
+    },
     viewArrangement(item) {},
     editArrangement(item) {
       this.batchEnabled = false;
-      this.arrData = this.getTestData();
-      this.items_arr = this.parseData(this.arrData);
-      if (this.items_tmp.length === 0) {
-        this.items_tmp = this.getTestTmp();
-      }
+      this.getTemplateList();
+      this.editIndex = this.items.indexOf(item);
       this.editItem = item;
+      this.arrData = item.arrangements;
+      this.items_arr = this.parseData(this.arrData);
       this.dialog_arr = true;
     },
-    saveArrangement() {
-      console.log(this.arrData);
-      // TODO: POST TO SERVER
-      this.editItem = null;
-      this.dialog_arr = false;
-    },
-    applyTemplate(item) {
-      let data = {};
-      data.uIds = this.batchEnabled
+    async saveArrangement() {
+      let uids = this.batchEnabled
         ? this.selectedEmployees
         : [this.editItem.uId];
-      data.arrangement = item.template;
-      this.arrData = item.template;
-      console.log(data);
-
-      // TODO: POST TO SERVER
-      this.dialog_arr = false;
+      try {
+        let result = await this.$http.post("/schedule/arrangement_edit.do", {
+          uIds: uids,
+          arrangement: this.arrData
+        });
+        if (!this.batchEnabled) {
+          this.items[this.editIndex].arrangements = this.arrData;
+          this.items[this.editIndex].preview = this.generatePreview(
+            this.arrData
+          );
+        } else await this.getOverview();
+        this.snackbarMsg = result.data.msg;
+        this.snackbar = true;
+        this.dialog_arr = false;
+      } catch (err) {
+        console.log(err);
+        this.snackbarMsg = err.data ? err.data.msg : "保存失败：服务器错误";
+        this.snackbar = true;
+      } finally {
+        this.editIndex = -1;
+        this.editItem = null;
+        this.arrData = [];
+      }
     },
-    async saveTemplate() {
-      let temp = {
-        name: this.tmpName,
-        arrangement: this.arrData
-      };
-      console.log(temp);
-      // try {
-      //   let result = await this.$http.post("/schedule/template_save.do", {
-      //     name: this.tmpName,
-      //     arrangement: this.arrData
-      //   });
-      //   this.snackbarMsg = result.data.msg;
-      //   this.snackbar = true;
-      // } catch (err) {
-      //   console.log(err);
-      //   this.snackbarMsg = err.data ? err.data.msg : "保存模版失败：服务器错误";
-      //   this.snackbar = true;
-      // }
+    applyTemplate(item) {
+      this.arrData = item.template;
+      this.saveArrangement();
     },
     initShift() {
       this.time = [null, null, null, null, null, null, null];
