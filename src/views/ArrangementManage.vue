@@ -358,7 +358,7 @@
                         :headers="headers_tmp"
                         :items="items_tmp"
                         :loading="loading_tmp"
-                        item-key="name"
+                        item-key="id"
                         loading-text="Loading... Please wait."
                         :no-data-text="errMsg_tmp"
                         hide-default-footer
@@ -415,22 +415,7 @@ export default {
       snackbarMsg: "",
       tmpName: "",
       batchEnabled: false,
-      employees: [
-        "t1",
-        "t2",
-        "t3",
-        "t4",
-        "t5",
-        "t6",
-        "t7",
-        "t1",
-        "t2",
-        "t3",
-        "t4",
-        "t5",
-        "t6",
-        "t7"
-      ],
+      employees: [],
       selectedEmployees: [],
       defaultArrangement: [
         { times: 0 },
@@ -621,8 +606,9 @@ export default {
           page: this.options_tmp.page,
           limit: this.options_tmp.itemsPerPage
         });
+        console.log(result.data);
         this.totalCount_tmp = result.data.data.count;
-        this.items_tmp = result.data.data.items;
+        this.items_tmp = result.data.data.templates;
       } catch (err) {
         this.totalCount_tmp = 0;
         this.items_tmp = [];
@@ -729,19 +715,20 @@ export default {
         } else await this.getOverview();
         this.snackbarMsg = result.data.msg;
         this.snackbar = true;
+
+        this.editIndex = -1;
+        this.editItem = null;
+        this.arrData = [];
         this.dialog_arr = false;
       } catch (err) {
         console.log(err);
         this.snackbarMsg = err.data ? err.data.msg : "保存失败：服务器错误";
         this.snackbar = true;
-      } finally {
-        this.editIndex = -1;
-        this.editItem = null;
-        this.arrData = [];
       }
     },
     applyTemplate(item) {
-      this.arrData = item.template;
+      console.log(item);
+      this.arrData = item.arrangement;
       this.saveArrangement();
     },
     initShift() {
