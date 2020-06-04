@@ -689,11 +689,19 @@ export default {
       }
     },
     viewArrangement(item) {},
-    editArrangement(item) {
+    async editArrangement(item) {
       this.batchEnabled = false;
-      this.getTemplateList();
+      await this.getTemplateList();
       this.editIndex = this.items.indexOf(item);
       this.editItem = item;
+      try {
+        let result = await this.$http.get("/schedule/employee_arrangement.do", {
+          uId: item.uId
+        });
+        this.editItem.arrangements = result.data.data.arrangement;
+      } catch (err) {
+        console.log(err);
+      }
       this.arrData = item.arrangements;
       this.items_arr = this.parseData(this.arrData);
       this.dialog_arr = true;
