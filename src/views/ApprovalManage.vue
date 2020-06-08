@@ -1,10 +1,15 @@
 <template>
   <v-responsive>
+    <v-snackbar v-model="snackbar">
+      {{ snackbarMsg }}
+      <v-btn color="primary" text @click="snackbar = false">
+        Close
+      </v-btn>
+    </v-snackbar>
     <v-data-table
       v-model="selected"
       :headers="headers"
       :items="items"
-      :search="search"
       item-key="uId"
       :loading="loading"
       loading-text="Loading... Please wait."
@@ -15,16 +20,16 @@
     >
       <template v-slot:top>
         <v-toolbar flat>
-          <v-btn class="mx-1" color="success" @click="batchAccept(selectedUids)"
+          <v-btn class="mx-1" color="success" @click="submit(selectedIds, 1)"
             >批量接受</v-btn
           >
-          <v-btn class="mx-1" color="error" @click="batchDecline(selectedUids)"
+          <v-btn class="mx-1" color="error" @click="submit(selectedIds, 0)"
             >批量拒绝</v-btn
           >
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
           <v-text-field
-            v-model="search"
+            v-model="keyword"
             append-icon="mdi-magnify"
             label="搜索"
             single-line
@@ -33,8 +38,10 @@
         </v-toolbar>
       </template>
       <template v-slot:item.actions="{ item }">
-        <v-icon small @click="editItem(item)" class="mr-2">mdi-pencil</v-icon>
-        <v-icon small @click="deleteItem(item)" class="mr-2">mdi-delete</v-icon>
+        <v-icon @click="submit([item.id], 1)" class="mr-2">mdi-check</v-icon>
+        <v-icon @click="submit([item.id], 0)" class="mr-2"
+          >mdi-file-excel-box-outline</v-icon
+        >
       </template>
     </v-data-table>
   </v-responsive>
@@ -46,10 +53,10 @@ export default {
   data() {
     return {
       dialog: false,
-      dialog_del: false,
-      valid: true,
+      snackbar: false,
+      snackbarMsg: "",
       loading: false,
-      search: "",
+      keyword: "",
       options: {
         page: 1,
         itemsPerPage: 15
@@ -65,58 +72,21 @@ export default {
         },
         { text: "姓名", value: "name" },
         { text: "部门", value: "departmentName" },
-        { text: "职位", value: "roleName" },
+        { text: "类型", value: "type" },
+        { text: "时间", value: "time" },
+        { text: "描述", value: "description" },
         { text: "操作", value: "actions" }
       ],
-      items: [],
-      editedIndex: -1,
-      editedItem: {
-        uId: -1,
-        name: "",
-        departmentId: -1,
-        departmentName: "",
-        roleId: -1,
-        roleName: ""
-      },
-      defaultItem: {
-        uId: -1,
-        name: "",
-        departmentId: -1,
-        departmentName: "",
-        roleId: -1,
-        roleName: ""
-      },
-      departments: [
-        { id: 1, name: "销售部" },
-        { id: 2, name: "售后部" },
-        { id: 3, name: "维修部" }
-      ],
-      rules: {
-        name: [v => !!v || "请输入姓名"],
-        department: [v => (v && v !== -1) || "请选择部门"],
-        role: [v => (v >= 0 && v <= 2) || "请选择职位"]
-      }
+      items: []
     };
   },
   computed: {
-    formTitle() {
-      return this.editedIndex === -1 ? "新增员工" : "编辑员工";
-    },
-    roles() {
-      if (this.$store.getters.userRole === 2)
-        return [
-          { name: "部门主管", id: 1 },
-          { name: "员工", id: 0 }
-        ];
-      //TODO: restrict condition when login module works
-      else return [{ name: "员工", id: 0 }];
-    },
-    selectedUids() {
-      let uids = [];
+    selectedIds() {
+      let ids = [];
       for (let item of this.selected) {
-        uids.push(item.uId);
+        ids.push(item.id);
       }
-      return uids;
+      return ids;
     }
   },
   watch: {
@@ -137,68 +107,59 @@ export default {
     async getDataFromApi() {
       this.loading = true;
       try {
-        let result = await this.$http.get("/staff/employee_list.do", {
-          page: this.options.page,
-          limit: this.options.itemsPerPage
-        });
+        // let result = await this.$http.get("/event/event_list.do", {
+        //   page: this.options.page,
+        //   limit: this.options.itemsPerPage,
+        //   keyword: this.keyword
+        // });
+        let result = this.testData();
+        console.log(result);
         this.totalCount = result.data.data.count;
-        this.items = result.data.data.items;
+        this.items = result.data.data.events;
       } catch (err) {
+        console.log(err);
         this.items = [];
         this.errorMessage = err.data ? err.data.msg : "与服务器连接出错";
       } finally {
         this.loading = false;
       }
     },
-    editItem(item) {
-      this.editedIndex = this.items.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialog = true;
-    },
-    async deleteItems(uids) {
-      console.log(uids);
-      let result = await this.$http.post("/staff/employee_delete", {
-        uId: this.selectedUids
-      });
-      //TODO: realize delete employees
-    },
-    deleteItem(item) {
-      confirm("确定要删除此用户吗?") && this.deleteItems([item.uId]);
-    },
-    excelImport() {
-      //TODO: realize import employee from Excel
-    },
-    getNameById(list, id) {
-      for (let item of list) {
-        if (item.id === id) {
-          return item.name;
+    testData() {
+      return {
+        data: {
+          status: 0,
+          msg: "",
+          data: {
+            count: 1,
+            events: [
+              {
+                id: 1,
+                uId: "DepartmentManager1",
+                name: "DM1",
+                departmentName: "销售部",
+                type: "请假",
+                time: "2020-09-28 10:00 - 2022-04-29 05:00",
+                description: "生病了"
+              }
+            ]
+          }
         }
-      }
-      return "null";
+      };
     },
-    close() {
-      this.dialog = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-      });
-    },
-
-    save() {
-      this.editedItem.departmentName = this.getNameById(
-        this.departments,
-        this.editedItem.departmentId
-      );
-      this.editedItem.roleName = this.getNameById(
-        this.roles,
-        this.editedItem.roleId
-      );
-      if (this.editedIndex > -1) {
-        Object.assign(this.items[this.editedIndex], this.editedItem);
-      } else {
-        this.items.push(this.editedItem);
+    async submit(ids, action) {
+      if (!ids.length) return;
+      try {
+        let result = await this.$http.post("/event/event_check.do", {
+          ids: ids,
+          action: action
+        });
+        this.snackbarMsg = result.data.msg;
+        this.snackbar = true;
+      } catch (err) {
+        console.log(err);
+        this.snackbarMsg = err.data ? err.data.msg : "审批失败：服务器错误";
+        this.snackbar = true;
       }
-      this.close();
     }
   }
 };
