@@ -688,7 +688,9 @@ export default {
         this.snackbar = true;
       }
     },
-    viewArrangement(item) {},
+    viewArrangement(item) {
+      this.$router.push("/arrangement_show/employee/" + item.uId);
+    },
     async editArrangement(item) {
       this.batchEnabled = false;
       await this.getTemplateList();
