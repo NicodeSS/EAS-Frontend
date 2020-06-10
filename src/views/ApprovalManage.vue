@@ -39,9 +39,7 @@
       </template>
       <template v-slot:item.actions="{ item }">
         <v-icon @click="submit([item.id], 1)" class="mr-2">mdi-check</v-icon>
-        <v-icon @click="submit([item.id], 0)" class="mr-2"
-          >mdi-file-excel-box-outline</v-icon
-        >
+        <v-icon @click="submit([item.id], 0)" class="mr-2">mdi-close</v-icon>
       </template>
     </v-data-table>
   </v-responsive>
@@ -130,6 +128,9 @@ export default {
           ids: ids,
           action: action
         });
+        for (let id of ids)
+          for (let i = 0; i < this.items.length; i++)
+            if (this.items[i].id === id) this.items.splice(i, 1);
         this.snackbarMsg = result.data.msg;
         this.snackbar = true;
       } catch (err) {
