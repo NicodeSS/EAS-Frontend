@@ -12,14 +12,14 @@
     </v-card-text>
 
     <v-calendar
-      type="month"
+      type="week"
       :events="events"
       :value="today"
       :now="today"
       :event-color="getEventColor"
+      :weekdays="[1, 2, 3, 4, 5, 6, 0]"
       color="primary"
       @click:event="showEvent"
-      @click:more="showList"
     ></v-calendar>
     <v-menu
       v-model="selectedOpen"
@@ -66,16 +66,21 @@ export default {
     };
   },
   mounted() {
-    this.uId = this.$route.params.uId;
+    this.uId = this.$route.params.uId ? this.$route.params.uId : null;
+    if (!this.uId) {
+      alert("员工不存在！");
+      this.$route.go(-1);
+    }
     this.getArrangement();
   },
   methods: {
-    getArrangement() {
+    async getArrangement() {
       try {
-        // let result = await this.$http.get("/schedule/view_week_employee.do", {
-        //   uId: uId
-        // });
-        let result = this.getTestData();
+        let result = await this.$http.get("/schedule/view_week_employee.do", {
+          uId: this.uId
+        });
+        console.log(result.data.data);
+        // let result = this.getTestData();
         this.name = result.data.data.name;
         this.today = result.data.data.today;
         this.events = result.data.data.events;
@@ -102,39 +107,6 @@ export default {
       }
 
       nativeEvent.stopPropagation();
-    },
-    showList() {},
-    getTestData() {
-      return {
-        code: 200,
-        data: {
-          status: 0,
-          msg: "Success",
-          data: {
-            name: "test1",
-            today: "2020-06-08",
-            events: [
-              {
-                name: "Weekly Meeting",
-                start: "2020-06-08 09:00",
-                end: "2020-06-08 10:00",
-                color: "cyan"
-              },
-              {
-                name: "Thomas' Birthday",
-                start: "2020-06-09",
-                color: "blue"
-              },
-              {
-                name: "Mash Potatoes",
-                start: "2020-06-10 12:30",
-                end: "2020-06-10 15:30",
-                color: "indigo"
-              }
-            ]
-          }
-        }
-      };
     }
   }
 };
