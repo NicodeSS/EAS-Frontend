@@ -52,7 +52,6 @@ export default {
   name: "ApprovalManage",
   data() {
     return {
-      dialog: false,
       snackbar: false,
       snackbarMsg: "",
       loading: false,
@@ -63,7 +62,7 @@ export default {
       },
       totalCount: 0,
       selected: [],
-      errorMessage: "",
+      errorMessage: "当前无活动",
       headers: [
         {
           text: "工号",
@@ -92,28 +91,28 @@ export default {
   watch: {
     options: {
       handler() {
-        this.getDataFromApi();
+        this.getEvents();
       }
     },
-    deep: true,
-    dialog(val) {
-      val || this.close();
-    }
+    keyword: {
+      handler() {
+        this.getEvents();
+      }
+    },
+    deep: true
   },
   mounted() {
-    this.getDataFromApi();
+    this.getEvents();
   },
   methods: {
-    async getDataFromApi() {
+    async getEvents() {
       this.loading = true;
       try {
-        // let result = await this.$http.get("/event/event_list.do", {
-        //   page: this.options.page,
-        //   limit: this.options.itemsPerPage,
-        //   keyword: this.keyword
-        // });
-        let result = this.testData();
-        console.log(result);
+        let result = await this.$http.get("/event/event_list.do", {
+          page: this.options.page,
+          limit: this.options.itemsPerPage,
+          keyword: this.keyword
+        });
         this.totalCount = result.data.data.count;
         this.items = result.data.data.events;
       } catch (err) {
@@ -123,28 +122,6 @@ export default {
       } finally {
         this.loading = false;
       }
-    },
-    testData() {
-      return {
-        data: {
-          status: 0,
-          msg: "",
-          data: {
-            count: 1,
-            events: [
-              {
-                id: 1,
-                uId: "DepartmentManager1",
-                name: "DM1",
-                departmentName: "销售部",
-                type: "请假",
-                time: "2020-09-28 10:00 - 2022-04-29 05:00",
-                description: "生病了"
-              }
-            ]
-          }
-        }
-      };
     },
     async submit(ids, action) {
       if (!ids.length) return;
