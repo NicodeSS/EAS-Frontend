@@ -2,24 +2,34 @@
   <v-card height="600">
     <v-card-text class="text--accent-1">
       <v-row class="justify-center align-center">
-        <span class="ml-4">{{ name }} 的周排班</span>
-        <v-divider class="mx-4" inset vertical></v-divider>
-        <v-spacer></v-spacer>
         <v-btn text class="text--darken-1" @click="$router.go(-1)"
           >< 返回</v-btn
         >
+        <span class="mx-4">{{ name }} 的月排班</span>
+        <v-spacer></v-spacer>
+        <v-btn class="mx-1" fab text small color="grey darken-2" @click="prev">
+          <v-icon small>mdi-chevron-left</v-icon>
+        </v-btn>
+        <v-btn class="mx-1" fab text small color="grey darken-2" @click="next">
+          <v-icon small>mdi-chevron-right</v-icon>
+        </v-btn>
+        <v-btn outlined class="mx-2" color="grey darken-2" @click="setToday">
+          今日
+        </v-btn>
       </v-row>
     </v-card-text>
 
     <v-calendar
-      type="week"
+      ref="calendar"
+      type="month"
       :events="events"
-      :value="today"
+      v-model="focus"
       :now="today"
       :event-color="getEventColor"
-      :weekdays="[1, 2, 3, 4, 5, 6, 0]"
       color="primary"
       @click:event="showEvent"
+      @click:more="showList"
+      @change="updateEvent"
     ></v-calendar>
     <v-menu
       v-model="selectedOpen"
@@ -32,7 +42,7 @@
           <v-toolbar-title v-html="selectedEvent.name"></v-toolbar-title>
           <v-spacer></v-spacer>
 
-          <v-btn icon>
+          <v-btn icon @click="edit">
             <v-icon>mdi-pencil</v-icon>
           </v-btn>
         </v-toolbar>
@@ -47,45 +57,81 @@
         </v-card-text>
       </v-card>
     </v-menu>
+    <v-dialog v-model="moreOpen">
+      <v-card color="grey lighten-4" min-width="350px" flat>
+        <v-toolbar color="cyan" dark>
+          <v-toolbar-title>{{ moreDate }}</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn class="mx-1" icon @click="edit">
+            <v-icon color="white">mdi-pencil</v-icon>
+          </v-btn>
+          <v-btn class="mx-1" icon @click="moreOpen = false">
+            <v-icon color="white">mdi-close</v-icon>
+          </v-btn>
+        </v-toolbar>
+        <v-card-text>
+          <v-list two-line>
+            <v-list-item v-for="(item, i) in moreEvents" :key="i">
+              <v-list-item-content>
+                <v-list-item-title v-text="item.name"></v-list-item-title>
+                <v-list-item-subtitle
+                  >{{ item.start }} - {{ item.end }}
+                </v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
 <script>
 export default {
   name: "EmployeeArrangement",
-  uId: "",
   data() {
     return {
       name: "",
-      today: "2020-01-01",
+      uId: null,
+      focus: null,
+      today: null,
       events: [],
 
       selectedEvent: {},
       selectedElement: null,
-      selectedOpen: false
+      selectedOpen: false,
+
+      moreEvents: [],
+      moreDate: null,
+      moreOpen: false
     };
   },
-  mounted() {
+  created() {
     this.uId = this.$route.params.uId ? this.$route.params.uId : null;
+    this.today = new Date().toISOString().substr(0, 10);
+    this.focus = this.today;
+  },
+  mounted() {
     if (!this.uId) {
       alert("员工不存在！");
       this.$route.go(-1);
     }
-    this.getArrangement();
+    this.$refs.calendar.checkChange();
   },
   methods: {
     async getArrangement() {
       try {
-        let result = await this.$http.get("/schedule/view_week_employee.do", {
-          uId: this.uId
+        let result = await this.$http.get("/schedule/view_month_employee.do", {
+          uId: this.uId,
+          day: this.focus
         });
-        console.log(result.data.data);
-        // let result = this.getTestData();
         this.name = result.data.data.name;
-        this.today = result.data.data.today;
         this.events = result.data.data.events;
       } catch (err) {
         console.log(err);
+        let errMsg = err.data ? err.data.msg : "服务器错误，请稍后再试";
+        alert(errMsg);
+        this.$router.go(-1);
         this.events = [];
       }
     },
@@ -105,8 +151,47 @@ export default {
       } else {
         open();
       }
-
       nativeEvent.stopPropagation();
+    },
+    updateEvent() {
+      this.getArrangement();
+    },
+    showList(dateEvent) {
+      let date = dateEvent.date;
+      const open = () => {
+        this.getEventsByDate(date);
+        this.moreDate = date;
+        setTimeout(() => (this.moreOpen = true), 10);
+      };
+      if (this.moreOpen) {
+        this.moreOpen = false;
+        setTimeout(open, 10);
+      } else {
+        open();
+      }
+    },
+    getEventsByDate(date) {
+      let events = [];
+      for (let event of this.events) {
+        if (
+          event.start.substr(0, 10) <= date &&
+          date <= event.end.substr(0, 10)
+        )
+          events.push(event);
+      }
+      this.moreEvents = events;
+    },
+    prev() {
+      this.$refs.calendar.prev();
+    },
+    next() {
+      this.$refs.calendar.next();
+    },
+    setToday() {
+      this.focus = this.today;
+    },
+    edit() {
+      this.$router.push("/arrangement_manage/employee/" + this.uId);
     }
   }
 };
