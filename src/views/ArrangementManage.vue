@@ -18,10 +18,12 @@
     >
       <template v-slot:top>
         <v-toolbar flat>
+          <!-- 批量排班 -->
           <v-btn class="mx-1" color="teal" @click="batchArrange"
             >批量排班</v-btn
           >
-          <!--TODO：临时加班按钮-->
+
+          <!-- 临时加班 -->
           <v-dialog
             v-if="isBoss"
             v-model="dialog_overwork"
@@ -335,6 +337,14 @@
                             >保存为模版</v-btn
                           >
                         </v-col>
+                        <v-col cols="1">
+                          <v-btn @click="copyArrangement">复制</v-btn>
+                        </v-col>
+                        <v-col cols="1">
+                          <v-btn :disabled="!pasted" @click="pasteArrangement"
+                            >粘贴</v-btn
+                          >
+                        </v-col>
                       </v-row>
                     </v-container>
                   </v-card-text>
@@ -411,6 +421,7 @@ export default {
       dialog_arr: false,
       dialog_shift: false,
       dialog_overwork: false,
+      direct_edit: false,
       snackbar: false,
       snackbarMsg: "",
       tmpName: "",
@@ -495,6 +506,9 @@ export default {
     valid() {
       return this.tmpName.length;
     },
+    pasted() {
+      return localStorage.getItem("pastedArrangement");
+    },
     shiftAvailable() {
       if (!this.shiftNumber) return true;
       for (let i = 1; i <= 2 * this.shiftNumber; i++)
@@ -570,6 +584,10 @@ export default {
     deep: true
   },
   mounted() {
+    if (this.$route.params.uId) {
+      console.log("haha");
+      this.directEditArrangement(this.$route.params.uId);
+    }
     this.getOverview();
   },
   methods: {
@@ -682,6 +700,7 @@ export default {
         });
         this.snackbarMsg = result.data.msg;
         this.snackbar = true;
+        this.dialog_overwork = false;
       } catch (err) {
         console.log(err);
         this.snackbarMsg = err.data ? err.data.msg : "创建加班失败：服务器错误";
@@ -690,6 +709,23 @@ export default {
     },
     viewArrangement(item) {
       this.$router.push("/arrangement_show/employee/" + item.uId);
+    },
+    async directEditArrangement(uId) {
+      this.direct_edit = true;
+      this.batchEnabled = false;
+      let temp = {};
+      await this.getTemplateList();
+      try {
+        let result = await this.$http.get("/schedule/employee_arrangement.do", {
+          uId: uId
+        });
+        temp.arrangements = result.data.data.arrangement;
+      } catch (err) {
+        console.log(err);
+      }
+      this.arrData = temp.arrangements;
+      this.items_arr = this.parseData(this.arrData);
+      this.dialog_arr = true;
     },
     async editArrangement(item) {
       this.batchEnabled = false;
@@ -717,7 +753,7 @@ export default {
           uIds: uids,
           arrangement: this.arrData
         });
-        if (!this.batchEnabled) {
+        if (!this.batchEnabled && !this.direct_edit) {
           this.items[this.editIndex].arrangements = this.arrData;
           this.items[this.editIndex].preview = this.generatePreview(
             this.arrData
@@ -734,6 +770,8 @@ export default {
         console.log(err);
         this.snackbarMsg = err.data ? err.data.msg : "保存失败：服务器错误";
         this.snackbar = true;
+      } finally {
+        this.direct_edit = false;
       }
     },
     applyTemplate(item) {
@@ -773,6 +811,16 @@ export default {
       this.arrData[this.shiftIndex] = temp;
       this.items_arr = this.parseData(this.arrData);
       this.dialog_shift = false;
+    },
+    copyArrangement() {
+      let arrangement = JSON.stringify(this.arrData);
+      localStorage.setItem("pastedArrangement", arrangement);
+    },
+    pasteArrangement() {
+      let arrangement = localStorage.getItem("pastedArrangement");
+      this.arrData = JSON.parse(arrangement);
+      this.editItem.arrangements = arrangement;
+      this.items_arr = this.parseData(this.arrData);
     }
   }
 };
