@@ -25,6 +25,10 @@ export default new Router({
           component: resolve => require(["../views/ArrangementManage"], resolve)
         },
         {
+          path: "/arrangement_manage/employee/:uId",
+          component: resolve => require(["../views/ArrangementManage"], resolve)
+        },
+        {
           path: "/approval_manage",
           component: resolve => require(["../views/ApprovalManage"], resolve)
         },
