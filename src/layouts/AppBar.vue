@@ -41,6 +41,7 @@ export default {
     doLogout: function() {
       this.$store.dispatch("setUser", null);
       localStorage.removeItem("token");
+      localStorage.removeItem("pastedArrangement");
       location.reload();
     },
     switchTheme: function() {
