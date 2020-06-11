@@ -3,6 +3,7 @@
     <v-app-bar-nav-icon @click.stop="changeDrawerState" />
     <v-toolbar-title>{{ Title }}</v-toolbar-title>
     <v-spacer></v-spacer>
+    <application-alert></application-alert>
     <v-menu v-model="menu" offset-y>
       <template v-slot:activator="{ on }">
         <v-btn text v-on="on">
@@ -27,12 +28,16 @@
 </template>
 
 <script>
+import ApplicationAlert from "../components/ApplicationAlert";
 export default {
   name: "AppBar",
   props: {
     Title: {
       required: true
     }
+  },
+  components: {
+    ApplicationAlert: ApplicationAlert
   },
   data: () => ({
     menu: false
