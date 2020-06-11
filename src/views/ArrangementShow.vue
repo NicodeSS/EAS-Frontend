@@ -62,7 +62,7 @@
         </v-card-text>
       </v-card>
     </v-menu>
-    <v-dialog v-model="moreOpen">
+    <v-dialog v-model="moreOpen" max-width="800px">
       <v-card color="grey lighten-4" min-width="350px" flat>
         <v-toolbar color="cyan" dark>
           <v-toolbar-title>{{ moreDate }}</v-toolbar-title>
