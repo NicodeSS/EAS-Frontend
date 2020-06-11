@@ -60,11 +60,11 @@ export default {
     showErr: false,
     nameRules: [
       v => !!v || "请输入用户名",
-      v => (v.length >= 6 && v.length <= 16) || "用户名长度为6-16个字符"
+      v => (v.length >= 4 && v.length <= 20) || "用户名长度为4-20个字符"
     ],
     passRules: [
       v => !!v || "请输入密码",
-      v => (v.length >= 6 && v.length <= 16) || "密码长度为6-16个字符"
+      v => (v.length >= 4 && v.length <= 20) || "密码长度为4-20个字符"
     ]
   }),
   methods: {
