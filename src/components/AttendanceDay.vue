@@ -61,10 +61,10 @@ export default {
   name: "AttendanceDay",
   data() {
     return {
-      presence: 200,
-      absenteeism: 200,
-      leave: 200,
-      total: 600,
+      presence: 0,
+      absenteeism: 0,
+      leave: 0,
+      total: 0,
 
       loading: false,
       options: {
