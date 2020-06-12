@@ -45,11 +45,10 @@
       :activator="selectedElement"
       offset-x
     >
-      <v-card color="grey lighten-4" min-width="350px" flat>
-        <v-toolbar :color="selectedEvent.color" dark>
+      <v-card min-width="350px" flat>
+        <v-toolbar :color="selectedEvent.color">
           <v-toolbar-title v-html="selectedEvent.name"></v-toolbar-title>
           <v-spacer></v-spacer>
-
           <v-btn icon @click="edit(selectedEvent.uId)">
             <v-icon>mdi-pencil</v-icon>
           </v-btn>
@@ -63,8 +62,8 @@
       </v-card>
     </v-menu>
     <v-dialog v-model="moreOpen" max-width="800px">
-      <v-card color="grey lighten-4" min-width="350px" flat>
-        <v-toolbar color="cyan" dark>
+      <v-card min-width="350px" flat>
+        <v-toolbar color="cyan">
           <v-toolbar-title>{{ moreDate }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-btn icon @click="moreOpen = false">
