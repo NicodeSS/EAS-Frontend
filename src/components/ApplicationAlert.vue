@@ -36,6 +36,7 @@ export default {
           keyword: ""
         });
         this.hasApplication = result.data.data.count > 0;
+        if (!this.hasApplication) this.canSendNoti = true;
       } catch (err) {
         console.error("获取审批动态出错");
         console.error(err);
