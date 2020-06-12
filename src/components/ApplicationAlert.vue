@@ -1,5 +1,5 @@
 <template>
-  <v-tooltip bottom color="orange">
+  <v-tooltip bottom color="orange" v-if="hasApplication">
     <template v-slot:activator="{ on }">
       <v-btn icon color="orange" dark v-on="on" @click="jumpApproval"
         ><v-icon>mdi-alert-circle</v-icon></v-btn
@@ -40,7 +40,6 @@ export default {
         console.error("获取审批动态出错");
         console.error(err);
       }
-      this.hasApplication = true;
     },
     // 刷新及发送通知
     doLogic() {
