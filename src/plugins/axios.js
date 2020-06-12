@@ -1,7 +1,10 @@
 import axios from "axios";
 
 let http = axios.create({
-  baseURL: "http://39.102.32.251:800/",
+  baseURL:
+    process.env.NODE_ENV === "production"
+      ? "http://39.102.32.251:800/"
+      : "http://39.102.32.251:800/",
   withCredentials: false,
   timeout: 10000
 });
