@@ -3,7 +3,7 @@
     <v-snackbar v-model="snackbar">
       {{ snackbarMsg }}
       <v-btn color="primary" text @click="snackbar = false">
-        Close
+        关闭
       </v-btn>
     </v-snackbar>
     <v-data-table
@@ -517,6 +517,53 @@
           </v-dialog>
 
           <v-divider class="mx-4" inset vertical></v-divider>
+          <v-dialog
+            v-if="isBoss"
+            v-model="dialog_location_edit"
+            persistent
+            max-width="500px"
+          >
+            <template v-slot:activator="{ on }">
+              <v-btn class="mx-1" color="warn" v-on="on">修改打卡地点</v-btn>
+            </template>
+            <v-card>
+              <v-card-title>
+                <span class="headline">修改打卡地点</span>
+              </v-card-title>
+              <v-card-text>
+                <v-row>
+                  <v-col cols="6">
+                    <v-text-field
+                      v-model="location[0]"
+                      label="经度"
+                      single-line
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="6">
+                    <v-text-field
+                      v-model="location[1]"
+                      label="纬度"
+                      single-line
+                    ></v-text-field>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" text @click="cancelLocation"
+                  >取消</v-btn
+                >
+                <v-btn
+                  color="blue darken-1"
+                  text
+                  :disabled="!(location[0] && location[1])"
+                  @click="saveLocation"
+                  >确定</v-btn
+                >
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+          <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
 
           <!-- 搜索框 -->
@@ -550,6 +597,7 @@ export default {
       dialog_arr: false,
       dialog_shift: false,
       dialog_overwork: false,
+      dialog_location_edit: false,
       direct_edit: false,
       snackbar: false,
       snackbarMsg: "",
@@ -630,7 +678,9 @@ export default {
       tempMenu: false,
 
       time_over: [null, null, null, null],
-      menu_over: [false, false, false, false]
+      menu_over: [false, false, false, false],
+
+      location: [null, null]
     };
   },
   computed: {
@@ -722,6 +772,7 @@ export default {
       this.directEditArrangement(this.$route.params.uId);
     }
     this.tempDate = this.today;
+
     this.getOverview();
   },
   methods: {
@@ -780,7 +831,7 @@ export default {
         this.snackbarMsg = result.data.msg;
         this.snackbar = true;
       } catch (err) {
-        console.log(err);
+        console.error(err);
         this.snackbarMsg = err.data ? err.data.msg : "保存模版失败：服务器错误";
         this.snackbar = true;
       }
@@ -836,7 +887,7 @@ export default {
         this.snackbar = true;
         this.dialog_overwork = false;
       } catch (err) {
-        console.log(err);
+        console.error(err);
         this.snackbarMsg = err.data ? err.data.msg : "创建加班失败：服务器错误";
         this.snackbar = true;
       }
@@ -855,7 +906,7 @@ export default {
         });
         temp.arrangements = result.data.data.arrangement;
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
       this.arrData = temp.arrangements;
       this.items_arr = this.parseData(this.arrData);
@@ -872,7 +923,7 @@ export default {
         });
         this.editItem.arrangements = result.data.data.arrangement;
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
       this.arrData = item.arrangements;
       this.items_arr = this.parseData(this.arrData);
@@ -901,7 +952,7 @@ export default {
         this.arrData = [];
         this.dialog_arr = false;
       } catch (err) {
-        console.log(err);
+        console.error(err);
         this.snackbarMsg = err.data ? err.data.msg : "保存失败：服务器错误";
         this.snackbar = true;
       } finally {
@@ -977,19 +1028,36 @@ export default {
       }
       try {
         let result = await this.$http.post(
-          "/schedule/temp_arrangement_edit.do",
+          "/schedule/employee_arrangement_temp.do",
           temp
         );
         this.snackbarMsg = result.data.msg;
-      } catch (err) {
-        console.err(err);
-        this.snackbarMsg = err.data ? err.data.msg : "保存失败：服务器错误";
-
         this.editIndex = -1;
         this.editItem = null;
         this.arrData = [];
+      } catch (err) {
+        console.error(err);
+        this.snackbarMsg = err.data ? err.data.msg : "保存失败：服务器错误";
       } finally {
         this.cancelTempEdit();
+        this.snackbar = true;
+      }
+    },
+    cancelLocation() {
+      this.location = [null, null];
+      this.dialog_location_edit = false;
+    },
+    async saveLocation() {
+      try {
+        console.log(this.location);
+        let result = await this.$http.post("/schedule/location_edit.do", {
+          location: this.location
+        });
+        this.snackbarMsg = result.data.msg;
+      } catch (err) {
+        console.error(err);
+        this.snackbarMsg = err.data ? err.data.msg : "保存失败：服务器错误";
+      } finally {
         this.snackbar = true;
       }
     }

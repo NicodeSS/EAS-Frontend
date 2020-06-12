@@ -33,7 +33,7 @@ export const validateUser = async ({ dispatch }) => {
       await dispatch("setUser", user);
       return true;
     } catch (err) {
-      console.log(err);
+      console.error(err);
       localStorage.removeItem("token");
       await dispatch("setUser", null);
       return false;

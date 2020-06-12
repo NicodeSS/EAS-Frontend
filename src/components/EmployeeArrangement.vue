@@ -128,7 +128,7 @@ export default {
         this.name = result.data.data.name;
         this.events = result.data.data.events;
       } catch (err) {
-        console.log(err);
+        console.error(err);
         let errMsg = err.data ? err.data.msg : "服务器错误，请稍后再试";
         alert(errMsg);
         this.$router.go(-1);

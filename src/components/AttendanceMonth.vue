@@ -127,7 +127,7 @@ export default {
           this.departments = result.data.data.items;
           this.departments.push({ id: -1, name: "请选择" });
         } catch (err) {
-          console.log(err);
+          console.error(err);
           this.departments = [{ id: -1, name: "请选择" }];
           this.departmentId = -1;
         }

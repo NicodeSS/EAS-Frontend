@@ -114,7 +114,7 @@ export default {
         this.totalCount = result.data.data.count;
         this.items = result.data.data.events;
       } catch (err) {
-        console.log(err);
+        console.error(err);
         this.items = [];
         this.errorMessage = err.data ? err.data.msg : "与服务器连接出错";
       } finally {
@@ -134,7 +134,7 @@ export default {
         this.snackbarMsg = result.data.msg;
         this.snackbar = true;
       } catch (err) {
-        console.log(err);
+        console.error(err);
         this.snackbarMsg = err.data ? err.data.msg : "审批失败：服务器错误";
         this.snackbar = true;
       }
