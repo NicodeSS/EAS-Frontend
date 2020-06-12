@@ -175,6 +175,7 @@
             </v-card>
           </v-dialog>
 
+          <!-- 排班对话框 -->
           <v-dialog v-model="dialog_arr" persistent max-width="1000px">
             <v-card>
               <v-card-title>
@@ -197,6 +198,7 @@
               <v-tabs v-model="tab" color="primary" dark>
                 <v-tab :href="'#tab-1'">直接编辑</v-tab>
                 <v-tab :href="'#tab-2'">模版导入</v-tab>
+                <v-tab :href="'#tab-3'">临时排班</v-tab>
 
                 <v-tab-item :value="'tab-1'">
                   <v-card-text>
@@ -386,11 +388,138 @@
                     </v-container>
                   </v-card-text>
                 </v-tab-item>
+                <v-tab-item :value="'tab-3'">
+                  <v-card-text>
+                    <v-container>
+                      <v-row>
+                        <v-col cols="6">
+                          <v-menu
+                            ref="menu"
+                            v-model="tempMenu"
+                            :close-on-content-click="false"
+                            :nudge-right="40"
+                            transition="scale-transition"
+                            offset-y
+                            min-width="290px"
+                          >
+                            <template v-slot:activator="{ on }">
+                              <v-text-field
+                                v-model="tempDate"
+                                label="调整日期"
+                                prepend-icon="access_time"
+                                readonly
+                                v-on="on"
+                              ></v-text-field>
+                            </template>
+                            <v-date-picker
+                              v-model="tempDate"
+                              :min="today"
+                              no-title
+                              scrollable
+                              locale="zh-cn"
+                            >
+                            </v-date-picker>
+                          </v-menu>
+                        </v-col>
+                        <v-col cols="6">
+                          <v-btn-toggle v-model="shiftNumber">
+                            <v-btn text>
+                              休息
+                            </v-btn>
+                            <v-btn text>
+                              一天一班
+                            </v-btn>
+                            <v-btn text>
+                              一天两班
+                            </v-btn>
+                            <v-btn text>
+                              一天三班
+                            </v-btn>
+                          </v-btn-toggle>
+                        </v-col>
+                      </v-row>
+                      <div v-for="n in shiftNumber" :key="n">
+                        <v-row>
+                          <v-col cols="6">
+                            <v-menu
+                              ref="menu"
+                              v-model="menu[2 * n - 1]"
+                              :close-on-content-click="false"
+                              :nudge-right="40"
+                              transition="scale-transition"
+                              offset-y
+                              max-width="290px"
+                              min-width="290px"
+                            >
+                              <template v-slot:activator="{ on }">
+                                <v-text-field
+                                  v-model="time[2 * n - 1]"
+                                  :label="'第' + n + '次上班时间'"
+                                  prepend-icon="access_time"
+                                  readonly
+                                  v-on="on"
+                                ></v-text-field>
+                              </template>
+                              <v-time-picker
+                                v-if="menu[2 * n - 1]"
+                                v-model="time[2 * n - 1]"
+                                :max="time[2 * n]"
+                                format="24hr"
+                                full-width
+                              ></v-time-picker>
+                            </v-menu>
+                          </v-col>
+                          <v-col cols="6">
+                            <v-menu
+                              ref="menu"
+                              v-model="menu[2 * n]"
+                              :close-on-content-click="false"
+                              :nudge-right="40"
+                              transition="scale-transition"
+                              offset-y
+                              max-width="290px"
+                              min-width="290px"
+                            >
+                              <template v-slot:activator="{ on }">
+                                <v-text-field
+                                  v-model="time[2 * n]"
+                                  :label="'第' + n + '次下班时间'"
+                                  prepend-icon="access_time"
+                                  readonly
+                                  v-on="on"
+                                ></v-text-field>
+                              </template>
+                              <v-time-picker
+                                v-if="menu[2 * n]"
+                                v-model="time[2 * n]"
+                                :min="time[2 * n - 1]"
+                                format="24hr"
+                                full-width
+                              ></v-time-picker>
+                            </v-menu>
+                          </v-col>
+                        </v-row>
+                      </div>
+                    </v-container>
+                  </v-card-text>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="blue darken-1" text @click="cancelTempEdit"
+                      >取消</v-btn
+                    >
+                    <v-btn color="blue darken-1" text @click="saveTempEdit"
+                      >保存</v-btn
+                    >
+                  </v-card-actions>
+                </v-tab-item>
               </v-tabs>
             </v-card>
           </v-dialog>
+
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
+
+          <!-- 搜索框 -->
           <v-text-field
             v-model="keyword"
             append-icon="mdi-magnify"
@@ -497,6 +626,8 @@ export default {
       shiftNumber: 0,
       time: [null, null, null, null, null, null, null, null],
       menu: [false, false, false, false, false, false, false],
+      tempDate: "",
+      tempMenu: false,
 
       time_over: [null, null, null, null],
       menu_over: [false, false, false, false]
@@ -549,6 +680,9 @@ export default {
         (this.time_over[0] === this.time_over[2] &&
           this.time_over[1] < this.time_over[3])
       );
+    },
+    today() {
+      return new Date().toISOString().substr(0, 10);
     }
   },
   watch: {
@@ -585,9 +719,9 @@ export default {
   },
   mounted() {
     if (this.$route.params.uId) {
-      console.log("haha");
       this.directEditArrangement(this.$route.params.uId);
     }
+    this.tempDate = this.today;
     this.getOverview();
   },
   methods: {
@@ -821,6 +955,43 @@ export default {
       this.arrData = JSON.parse(arrangement);
       this.editItem.arrangements = arrangement;
       this.items_arr = this.parseData(this.arrData);
+    },
+    cancelTempEdit() {
+      this.time = [null, null, null, null, null, null, null];
+      this.shiftNumber = 0;
+      this.tempDate = this.today;
+      this.dialog_arr = false;
+    },
+    async saveTempEdit() {
+      let temp = {};
+      temp.uIds = this.batchEnabled
+        ? this.selectedEmployees
+        : [this.editItem.uId];
+      temp.start = this.tempDate;
+      temp.times = this.shiftNumber;
+      if (this.shiftNumber > 0) {
+        temp.durations = [];
+        for (let i = 1; i <= this.shiftNumber; i++) {
+          temp.durations.push(this.time[2 * i - 1] + "-" + this.time[2 * i]);
+        }
+      }
+      try {
+        let result = await this.$http.post(
+          "/schedule/temp_arrangement_edit.do",
+          temp
+        );
+        this.snackbarMsg = result.data.msg;
+      } catch (err) {
+        console.err(err);
+        this.snackbarMsg = err.data ? err.data.msg : "保存失败：服务器错误";
+
+        this.editIndex = -1;
+        this.editItem = null;
+        this.arrData = [];
+      } finally {
+        this.cancelTempEdit();
+        this.snackbar = true;
+      }
     }
   }
 };
