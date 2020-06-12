@@ -3,7 +3,10 @@
     <!-- 顶部工具条 -->
     <v-card-text class="text--accent-1">
       <v-row class="justify-center align-center">
-        <v-btn text class="text--darken-1" @click="$router.go(-1)"
+        <v-btn
+          text
+          class="text--darken-1"
+          @click="$router.push('/arrangement_manage')"
           >< 返回</v-btn
         >
         <span class="mx-4">{{ name }} 的月排班</span>
