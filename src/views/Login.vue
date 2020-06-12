@@ -83,7 +83,6 @@ export default {
           role: content.role,
           token: content.token
         };
-        console.log(content);
         this.$store.dispatch("setUser", user);
 
         if (this.$route.query.redirect) {

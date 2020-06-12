@@ -1,5 +1,6 @@
 <template>
   <v-card height="600">
+    <!-- 顶部工具条 -->
     <v-card-text class="text--accent-1">
       <v-row class="justify-center align-center">
         <v-btn text class="text--darken-1" @click="$router.go(-1)"
@@ -19,6 +20,7 @@
       </v-row>
     </v-card-text>
 
+    <!-- 日历主体 -->
     <v-calendar
       ref="calendar"
       type="month"
@@ -28,9 +30,11 @@
       :event-color="getEventColor"
       color="primary"
       @click:event="showEvent"
-      @click:more="showList"
+      @click:more="showMore"
       @change="updateEvent"
     ></v-calendar>
+
+    <!-- 日历活动菜单 -->
     <v-menu
       v-model="selectedOpen"
       :close-on-content-click="false"
@@ -57,6 +61,8 @@
         </v-card-text>
       </v-card>
     </v-menu>
+
+    <!-- 日历更多活动对话框 -->
     <v-dialog v-model="moreOpen" max-width="800px">
       <v-card min-width="350px" flat>
         <v-toolbar color="cyan">
@@ -119,7 +125,8 @@ export default {
     this.$refs.calendar.checkChange();
   },
   methods: {
-    async getArrangement() {
+    // 获取活动
+    async getEvents() {
       try {
         let result = await this.$http.get("/schedule/view_month_employee.do", {
           uId: this.uId,
@@ -135,9 +142,11 @@ export default {
         this.events = [];
       }
     },
+    // 获取当前活动颜色
     getEventColor(event) {
       return event.color;
     },
+    // 活动菜单 - 显示
     showEvent({ nativeEvent, event }) {
       const open = () => {
         this.selectedEvent = event;
@@ -153,10 +162,12 @@ export default {
       }
       nativeEvent.stopPropagation();
     },
+    // 日历更新
     updateEvent() {
-      this.getArrangement();
+      this.getEvents();
     },
-    showList(dateEvent) {
+    // 更多活动对话框 - 显示
+    showMore(dateEvent) {
       let date = dateEvent.date;
       const open = () => {
         this.getEventsByDate(date);
@@ -170,6 +181,7 @@ export default {
         open();
       }
     },
+    // 以日期获取当日所有活动
     getEventsByDate(date) {
       let events = [];
       for (let event of this.events) {
@@ -181,15 +193,19 @@ export default {
       }
       this.moreEvents = events;
     },
+    // 上一月
     prev() {
       this.$refs.calendar.prev();
     },
+    // 下一月
     next() {
       this.$refs.calendar.next();
     },
+    // 跳转至今日
     setToday() {
       this.focus = this.today;
     },
+    // 编辑员工排班
     edit() {
       this.$router.push("/arrangement_manage/employee/" + this.uId);
     }

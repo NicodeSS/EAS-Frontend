@@ -1,5 +1,6 @@
 <template>
   <v-card height="600">
+    <!-- 顶部工具条 -->
     <v-card-text class="text--accent-1">
       <v-row class="justify-center align-center">
         <v-col cols="3">
@@ -27,6 +28,7 @@
       </v-row>
     </v-card-text>
 
+    <!-- 日历主体 -->
     <v-calendar
       ref="calendar"
       type="month"
@@ -39,6 +41,8 @@
       @click:more="showList"
       @change="updateEvent"
     ></v-calendar>
+
+    <!-- 活动详情菜单 -->
     <v-menu
       v-model="selectedOpen"
       :close-on-content-click="false"
@@ -61,6 +65,8 @@
         </v-card-text>
       </v-card>
     </v-menu>
+
+    <!-- 更多活动对话框 -->
     <v-dialog v-model="moreOpen" max-width="800px">
       <v-card min-width="350px" flat>
         <v-toolbar color="cyan">
@@ -141,12 +147,13 @@ export default {
   watch: {
     departmentId: {
       handler() {
-        this.getArrangement();
+        this.getEvents();
       }
     }
   },
   methods: {
-    async getArrangement() {
+    // 获取活动列表
+    async getEvents() {
       try {
         let result = await this.$http.get("/schedule/view_month.do", {
           departmentId: this.departmentId,
@@ -159,6 +166,7 @@ export default {
         this.events = [];
       }
     },
+    // 获取部门列表（经理用）
     async getDepartments() {
       if (this.departments.length <= 1) {
         try {
@@ -172,9 +180,11 @@ export default {
         }
       }
     },
+    // 获取当前活动颜色
     getEventColor(event) {
       return event.color;
     },
+    // 显示活动菜单
     showEvent({ nativeEvent, event }) {
       const open = () => {
         this.selectedEvent = event;
@@ -187,12 +197,13 @@ export default {
       } else {
         open();
       }
-
       nativeEvent.stopPropagation();
     },
+    // 更新活动
     updateEvent() {
-      this.getArrangement();
+      this.getEvents();
     },
+    // 显示更多活动对话框
     showList(dateEvent) {
       let date = dateEvent.date;
       const open = () => {
@@ -207,6 +218,7 @@ export default {
         open();
       }
     },
+    // 按日期获取当天所有活动
     getEventsByDate(date) {
       let events = [];
       for (let event of this.events) {
@@ -214,15 +226,19 @@ export default {
       }
       this.moreEvents = events;
     },
+    // 上一月
     prev() {
       this.$refs.calendar.prev();
     },
+    // 下一月
     next() {
       this.$refs.calendar.next();
     },
+    // 跳转至今日视图
     setToday() {
       this.focus = this.today;
     },
+    // 编辑员工排班
     edit(uId) {
       this.$router.push("/arrangement_manage/employee/" + uId);
     }

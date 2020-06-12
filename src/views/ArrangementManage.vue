@@ -1,11 +1,14 @@
 <template>
   <v-responsive>
+    <!-- 消息条 -->
     <v-snackbar v-model="snackbar">
       {{ snackbarMsg }}
       <v-btn color="primary" text @click="snackbar = false">
         关闭
       </v-btn>
     </v-snackbar>
+
+    <!-- 排班表格 -->
     <v-data-table
       :headers="headers"
       :items="items"
@@ -16,14 +19,15 @@
       :options.sync="options"
       :server-items-length="totalCount"
     >
+      <!-- 顶部工具条 -->
       <template v-slot:top>
         <v-toolbar flat>
           <!-- 批量排班 -->
-          <v-btn class="mx-1" color="teal" @click="batchArrange"
+          <v-btn class="mx-1" color="primary" @click="batchArrange"
             >批量排班</v-btn
           >
 
-          <!-- 临时加班 -->
+          <!-- 临时加班对话框 -->
           <v-dialog
             v-if="isBoss"
             v-model="dialog_overwork"
@@ -31,7 +35,7 @@
             max-width="500px"
           >
             <template v-slot:activator="{ on }">
-              <v-btn class="mx-1" color="warn" v-on="on">临时加班</v-btn>
+              <v-btn class="mx-1" color="secondary" v-on="on">临时加班</v-btn>
             </template>
             <v-card>
               <v-card-title>
@@ -181,25 +185,31 @@
               <v-card-title>
                 <span class="headline">{{ dialog_arr_title }}</span>
               </v-card-title>
+
+              <!-- 批量排班员工选择框 -->
               <v-card-text>
                 <v-select
-                  v-if="batchEnabled"
+                  v-if="batch_edit"
                   v-model="selectedEmployees"
                   :items="employees"
                   item-text="name"
                   item-value="uId"
-                  attach
                   chips
                   label="需排班的员工"
                   multiple
-                  required
+                  hide-details
+                  outlined
+                  dense
                 ></v-select>
               </v-card-text>
+
+              <!-- 选项卡 -->
               <v-tabs v-model="tab" color="primary" dark>
                 <v-tab :href="'#tab-1'">直接编辑</v-tab>
                 <v-tab :href="'#tab-2'">模版导入</v-tab>
                 <v-tab :href="'#tab-3'">临时排班</v-tab>
 
+                <!-- 直接编辑 -->
                 <v-tab-item :value="'tab-1'">
                   <v-card-text>
                     <v-container>
@@ -363,6 +373,7 @@
                     >
                   </v-card-actions>
                 </v-tab-item>
+                <!-- 模版导入 -->
                 <v-tab-item :value="'tab-2'">
                   <v-card-text>
                     <v-container>
@@ -388,6 +399,7 @@
                     </v-container>
                   </v-card-text>
                 </v-tab-item>
+                <!-- 临时排班 -->
                 <v-tab-item :value="'tab-3'">
                   <v-card-text>
                     <v-container>
@@ -395,7 +407,7 @@
                         <v-col cols="6">
                           <v-menu
                             ref="menu"
-                            v-model="tempMenu"
+                            v-model="menu_temp"
                             :close-on-content-click="false"
                             :nudge-right="40"
                             transition="scale-transition"
@@ -404,7 +416,7 @@
                           >
                             <template v-slot:activator="{ on }">
                               <v-text-field
-                                v-model="tempDate"
+                                v-model="date_temp"
                                 label="调整日期"
                                 prepend-icon="access_time"
                                 readonly
@@ -412,7 +424,7 @@
                               ></v-text-field>
                             </template>
                             <v-date-picker
-                              v-model="tempDate"
+                              v-model="date_temp"
                               :min="today"
                               no-title
                               scrollable
@@ -517,6 +529,8 @@
           </v-dialog>
 
           <v-divider class="mx-4" inset vertical></v-divider>
+
+          <!-- 打卡位置设置对话框 -->
           <v-dialog
             v-if="isBoss"
             v-model="dialog_location_edit"
@@ -524,7 +538,9 @@
             max-width="500px"
           >
             <template v-slot:activator="{ on }">
-              <v-btn class="mx-1" color="warn" v-on="on">修改打卡地点</v-btn>
+              <v-btn class="mx-1" color="secondary" v-on="on"
+                >修改打卡地点</v-btn
+              >
             </template>
             <v-card>
               <v-card-title>
@@ -563,6 +579,7 @@
               </v-card-actions>
             </v-card>
           </v-dialog>
+
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
 
@@ -576,6 +593,8 @@
           ></v-text-field>
         </v-toolbar>
       </template>
+
+      <!-- 操作项 -->
       <template v-slot:item.actions="{ item }">
         <v-icon small @click="viewArrangement(item)" class="mr-2"
           >mdi-table-search</v-icon
@@ -594,15 +613,19 @@ export default {
   data() {
     return {
       tab: null,
+
       dialog_arr: false,
       dialog_shift: false,
       dialog_overwork: false,
       dialog_location_edit: false,
-      direct_edit: false,
+
       snackbar: false,
       snackbarMsg: "",
+
+      batch_edit: false,
+      direct_edit: false,
+
       tmpName: "",
-      batchEnabled: false,
       employees: [],
       selectedEmployees: [],
       defaultArrangement: [
@@ -672,11 +695,11 @@ export default {
       editItem: null,
       shiftIndex: -1,
       shiftNumber: 0,
+
       time: [null, null, null, null, null, null, null, null],
       menu: [false, false, false, false, false, false, false],
-      tempDate: "",
-      tempMenu: false,
-
+      date_temp: "",
+      menu_temp: false,
       time_over: [null, null, null, null],
       menu_over: [false, false, false, false],
 
@@ -684,24 +707,30 @@ export default {
     };
   },
   computed: {
+    // 判断要保存的模版名是否有效
     valid() {
       return this.tmpName.length;
     },
+    // 剪贴板里是否存在排班
     pasted() {
       return localStorage.getItem("pastedArrangement");
     },
+    // 排班是否有效
     shiftAvailable() {
       if (!this.shiftNumber) return true;
       for (let i = 1; i <= 2 * this.shiftNumber; i++)
         if (!this.time[i]) return false;
       return true;
     },
+    // 当前用户是否为经理
     isBoss() {
       return this.$store.getters.userRole === 2;
     },
+    // 排班对话框标题
     dialog_arr_title() {
-      return this.batchEnabled ? "批量排班" : "排班";
+      return this.batch_edit ? "批量排班" : "排班";
     },
+    // 有效开始时间
     time_begin() {
       if (
         this.time_over[0] < this.time_over[2] ||
@@ -713,6 +742,7 @@ export default {
         return this.time_over[1];
       else return "23:59";
     },
+    // 有效结束时间
     time_end() {
       if (
         this.time_over[0] < this.time_over[2] ||
@@ -724,6 +754,7 @@ export default {
         return this.time_over[3];
       else return "00:00";
     },
+    // 创建的加班是否有效
     overwork_valid() {
       return !(
         this.time_over[0] < this.time_over[2] ||
@@ -731,6 +762,7 @@ export default {
           this.time_over[1] < this.time_over[3])
       );
     },
+    // 今日日期
     today() {
       return new Date().toISOString().substr(0, 10);
     }
@@ -771,11 +803,12 @@ export default {
     if (this.$route.params.uId) {
       this.directEditArrangement(this.$route.params.uId);
     }
-    this.tempDate = this.today;
+    this.date_temp = this.today;
 
     this.getOverview();
   },
   methods: {
+    // 获取员工排班总览
     async getOverview() {
       this.loading = true;
       try {
@@ -793,6 +826,7 @@ export default {
         this.loading = false;
       }
     },
+    // 获取员工列表（批量排班用）
     async getEmployeeList() {
       try {
         let result = await this.$http.get("/manager/employee_full_list.do");
@@ -802,6 +836,7 @@ export default {
         alert("无法获取员工列表!");
       }
     },
+    // 获取排班模版列表
     async getTemplateList() {
       this.loading_tmp = true;
       try {
@@ -809,7 +844,6 @@ export default {
           page: this.options_tmp.page,
           limit: this.options_tmp.itemsPerPage
         });
-        console.log(result.data);
         this.totalCount_tmp = result.data.data.count;
         this.items_tmp = result.data.data.templates;
       } catch (err) {
@@ -820,12 +854,12 @@ export default {
         this.loading_tmp = false;
       }
     },
+    // 保存排班模版
     async saveTemplate() {
       let temp = {
         name: this.tmpName,
         arrangement: this.arrData
       };
-      console.log(temp);
       try {
         let result = await this.$http.post("/template/template_add.do", temp);
         this.snackbarMsg = result.data.msg;
@@ -836,6 +870,7 @@ export default {
         this.snackbar = true;
       }
     },
+    // 解析排班格式
     parseData(data) {
       let newData = [];
       let week = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
@@ -853,6 +888,7 @@ export default {
       }
       return newData;
     },
+    // 生成当前排班预览
     generatePreview(arrangement) {
       let options = ["休", "一", "二", "三"];
       let str = "";
@@ -861,8 +897,9 @@ export default {
       }
       return str;
     },
+    // 打开批量排班对话框处理
     batchArrange() {
-      this.batchEnabled = true;
+      this.batch_edit = true;
       this.getEmployeeList();
       this.getTemplateList();
       this.editIndex = -1;
@@ -871,10 +908,12 @@ export default {
       this.items_arr = this.parseData(this.arrData);
       this.dialog_arr = true;
     },
+    // 加班对话框 - 取消
     cancelOverwork() {
       this.time_over = [null, null, null, null];
       this.dialog_overwork = false;
     },
+    // 加班对话框 - 创建
     async tempOverwork() {
       let begin = this.time_over[0] + " " + this.time_over[1];
       let end = this.time_over[2] + " " + this.time_over[3];
@@ -892,12 +931,14 @@ export default {
         this.snackbar = true;
       }
     },
+    // 查看员工排班
     viewArrangement(item) {
       this.$router.push("/arrangement_show/employee/" + item.uId);
     },
+    // 从其他页面直接修改排班
     async directEditArrangement(uId) {
       this.direct_edit = true;
-      this.batchEnabled = false;
+      this.batch_edit = false;
       let temp = {};
       await this.getTemplateList();
       try {
@@ -912,8 +953,9 @@ export default {
       this.items_arr = this.parseData(this.arrData);
       this.dialog_arr = true;
     },
+    // 排班对话框 - 打开
     async editArrangement(item) {
-      this.batchEnabled = false;
+      this.batch_edit = false;
       await this.getTemplateList();
       this.editIndex = this.items.indexOf(item);
       this.editItem = item;
@@ -929,16 +971,15 @@ export default {
       this.items_arr = this.parseData(this.arrData);
       this.dialog_arr = true;
     },
+    // 排班对话框 - 保存
     async saveArrangement() {
-      let uids = this.batchEnabled
-        ? this.selectedEmployees
-        : [this.editItem.uId];
+      let uids = this.batch_edit ? this.selectedEmployees : [this.editItem.uId];
       try {
         let result = await this.$http.post("/schedule/arrangement_edit.do", {
           uIds: uids,
           arrangement: this.arrData
         });
-        if (!this.batchEnabled && !this.direct_edit) {
+        if (!this.batch_edit && !this.direct_edit) {
           this.items[this.editIndex].arrangements = this.arrData;
           this.items[this.editIndex].preview = this.generatePreview(
             this.arrData
@@ -959,11 +1000,12 @@ export default {
         this.direct_edit = false;
       }
     },
+    // 排班对话框 - 应用模版
     applyTemplate(item) {
-      console.log(item);
       this.arrData = item.arrangement;
       this.saveArrangement();
     },
+    // 班次对话框 - 初始化
     initShift() {
       this.time = [null, null, null, null, null, null, null];
       this.shiftNumber = this.arrData[this.shiftIndex].times;
@@ -975,15 +1017,18 @@ export default {
         this.time[2 * i] = regRes[2];
       }
     },
+    // 班次对话框 - 编辑
     editShift(item) {
       this.shiftIndex = this.items_arr.indexOf(item);
       this.initShift();
       this.dialog_shift = true;
     },
+    // 班次对话框 - 取消
     cancelShift() {
       this.initShift();
       this.dialog_shift = false;
     },
+    // 班次对话框 - 保存
     saveShift() {
       let temp = {};
       temp.times = this.shiftNumber;
@@ -997,28 +1042,32 @@ export default {
       this.items_arr = this.parseData(this.arrData);
       this.dialog_shift = false;
     },
+    // 排班对话框 - 复制排班
     copyArrangement() {
       let arrangement = JSON.stringify(this.arrData);
       localStorage.setItem("pastedArrangement", arrangement);
     },
+    // 排班对话框 - 粘贴排班
     pasteArrangement() {
       let arrangement = localStorage.getItem("pastedArrangement");
       this.arrData = JSON.parse(arrangement);
       this.editItem.arrangements = arrangement;
       this.items_arr = this.parseData(this.arrData);
     },
+    // 排班对话框 - 临时加班 - 取消
     cancelTempEdit() {
       this.time = [null, null, null, null, null, null, null];
       this.shiftNumber = 0;
-      this.tempDate = this.today;
+      this.date_temp = this.today;
       this.dialog_arr = false;
     },
+    // 排班对话框 - 临时加班 - 保存
     async saveTempEdit() {
       let temp = {};
-      temp.uIds = this.batchEnabled
+      temp.uIds = this.batch_edit
         ? this.selectedEmployees
         : [this.editItem.uId];
-      temp.start = this.tempDate;
+      temp.start = this.date_temp;
       temp.times = this.shiftNumber;
       if (this.shiftNumber > 0) {
         temp.durations = [];
@@ -1043,13 +1092,14 @@ export default {
         this.snackbar = true;
       }
     },
+    // 打卡地点修改对话框 - 取消
     cancelLocation() {
       this.location = [null, null];
       this.dialog_location_edit = false;
     },
+    // 打卡地点修改对话框 - 保存
     async saveLocation() {
       try {
-        console.log(this.location);
         let result = await this.$http.post("/schedule/location_edit.do", {
           location: this.location
         });

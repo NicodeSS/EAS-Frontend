@@ -2,6 +2,7 @@
   <v-row align="center" justify="center">
     <v-col cols="5" align="center" justify="center">
       <div class="d-flex flex-column">
+        <!-- 进度环 -->
         <v-progress-circular
           :rotate="-90"
           :size="320"
@@ -14,6 +15,7 @@
           <div class="total">{{ total }}</div>
         </v-progress-circular>
 
+        <!-- 考勤信息 -->
         <v-card class="d-flex my-6" width="400px">
           <v-spacer></v-spacer>
           <div class="info-text">
@@ -38,6 +40,8 @@
         </v-card>
       </div>
     </v-col>
+
+    <!-- 离岗人员名单 -->
     <v-col cols="7">
       <span>离岗人员名单</span>
       <v-data-table
@@ -84,6 +88,7 @@ export default {
     };
   },
   computed: {
+    // 进度环进度（0-100）
     percentage() {
       return this.total ? Math.floor((this.presence / this.total) * 100) : 100;
     }
@@ -99,6 +104,7 @@ export default {
     this.getOverview();
   },
   methods: {
+    // 获取详情
     async getOverview() {
       this.loading = true;
       try {
@@ -106,7 +112,6 @@ export default {
           page: this.options.page,
           limit: this.options.itemsPerPage
         });
-        console.log(result.data);
         let resData = result.data.data;
         this.totalCount = resData.count;
         this.items = resData.items;

@@ -1,11 +1,14 @@
 <template>
   <v-responsive>
+    <!-- 消息条 -->
     <v-snackbar v-model="snackbar">
       {{ snackbarMsg }}
       <v-btn color="primary" text @click="snackbar = false">
         Close
       </v-btn>
     </v-snackbar>
+
+    <!-- 数据表格 -->
     <v-data-table
       v-model="selected"
       :headers="headers"
@@ -18,15 +21,17 @@
       :server-items-length="totalCount"
       show-select
     >
+      <!-- 顶部工具栏 -->
       <template v-slot:top>
         <v-toolbar flat>
+          <!-- 添加员工对话框 -->
           <v-dialog v-model="dialog" max-width="500px">
             <template v-slot:activator="{ on }">
               <v-btn class="mx-1" color="primary" v-on="on">添加员工</v-btn>
             </template>
             <v-card>
               <v-card-title>
-                <span class="headline">{{ formTitle }}</span>
+                <span class="headline">{{ dialogTitle }}</span>
               </v-card-title>
               <v-card-text>
                 <v-container>
@@ -88,6 +93,7 @@
             </v-card>
           </v-dialog>
 
+          <!-- 删除员工对话框 -->
           <v-dialog v-model="dialog_del" max-width="500px">
             <template v-slot:activator="{ on }">
               <v-btn class="mx-1" color="error" v-on="on">删除选定员工</v-btn>
@@ -112,6 +118,7 @@
             </v-card>
           </v-dialog>
 
+          <!-- Excel导入对话框 -->
           <v-dialog v-model="dialog_import" max-width="500px">
             <template v-slot:activator="{ on }">
               <v-btn class="mx-1" color="teal" v-on="on">Excel 导入</v-btn>
@@ -149,6 +156,8 @@
 
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
+
+          <!-- 搜索框 -->
           <v-text-field
             v-model="keyword"
             append-icon="mdi-magnify"
@@ -158,6 +167,8 @@
           ></v-text-field>
         </v-toolbar>
       </template>
+
+      <!-- 操作项 -->
       <template v-slot:item.actions="{ item }">
         <v-icon small @click="editItem(item)" class="mr-2">mdi-pencil</v-icon>
         <v-icon small @click="deleteItem(item)" class="mr-2">mdi-delete</v-icon>
@@ -174,8 +185,10 @@ export default {
       dialog: false,
       dialog_del: false,
       dialog_import: false,
+
       snackbar: false,
-      valid: true,
+      snackbarMsg: "",
+
       loading: false,
       keyword: "",
       options: {
@@ -185,7 +198,6 @@ export default {
       totalCount: 0,
       selected: [],
       errorMessage: "",
-      snackbarMsg: "",
       headers: [
         {
           text: "工号",
@@ -198,6 +210,7 @@ export default {
         { text: "操作", value: "actions" }
       ],
       items: [],
+
       editedIndex: -1,
       editedItem: {
         uId: "",
@@ -222,13 +235,16 @@ export default {
         name: [v => !!v || "请输入姓名"],
         department: [v => (v && v !== -1) || "请选择部门"],
         role: [v => (v >= 0 && v <= 2) || "请选择职位"]
-      }
+      },
+      valid: true
     };
   },
   computed: {
-    formTitle() {
+    // 对话框标题
+    dialogTitle() {
       return this.editedIndex === -1 ? "新增员工" : "编辑员工";
     },
+    // 根据当前登陆角色判断是否可以任命部门主管
     roles() {
       if (this.$store.getters.userRole === 2)
         return [
@@ -239,6 +255,7 @@ export default {
         return [{ name: "员工", id: 0 }];
       else return [];
     },
+    // 表格中选中项的Uid列表
     selectedUids() {
       let uids = [];
       for (let item of this.selected) {
@@ -250,12 +267,12 @@ export default {
   watch: {
     options: {
       handler() {
-        this.getDataFromApi();
+        this.getEmployees();
       }
     },
     keyword: {
       handler() {
-        this.getDataFromApi();
+        this.getEmployees();
       }
     },
     deep: true,
@@ -264,10 +281,11 @@ export default {
     }
   },
   mounted() {
-    this.getDataFromApi();
+    this.getEmployees();
   },
   methods: {
-    async getDataFromApi() {
+    // 获取员工列表
+    async getEmployees() {
       this.loading = true;
       try {
         if (this.departments.length === 0) {
@@ -288,11 +306,13 @@ export default {
         this.loading = false;
       }
     },
+    // 编辑员工信息
     editItem(item) {
       this.editedIndex = this.items.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
+    // 批量删除员工
     async deleteItems(uids) {
       try {
         let result = await this.$http.post("/staff/employee_delete.do", {
@@ -310,10 +330,12 @@ export default {
         this.dialog_del = false;
       }
     },
+    // 删除员工
     deleteItem(item) {
       confirm("确定要删除员工 " + item.name + " 吗?") &&
         this.deleteItems([item.uId]);
     },
+    // Excel导入
     async excelImport() {
       let formData = new FormData();
       formData.append("file", this.file);
@@ -332,6 +354,7 @@ export default {
         this.dialog_import = false;
       }
     },
+    // 用部门id获取部门名称
     getNameById(list, id) {
       for (let item of list) {
         if (item.id === id) {
@@ -340,6 +363,7 @@ export default {
       }
       return "null";
     },
+    // 新建/编辑对话框 - 关闭
     close() {
       this.dialog = false;
       this.$nextTick(() => {
@@ -347,7 +371,7 @@ export default {
         this.editedIndex = -1;
       });
     },
-
+    // 新建/编辑对话框 - 保存
     async save() {
       try {
         let url =

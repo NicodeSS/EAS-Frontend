@@ -1,11 +1,14 @@
 <template>
   <v-responsive>
+    <!-- 消息条 -->
     <v-snackbar v-model="snackbar">
       {{ snackbarMsg }}
       <v-btn color="primary" text @click="snackbar = false">
         Close
       </v-btn>
     </v-snackbar>
+
+    <!-- 审批表格 -->
     <v-data-table
       v-model="selected"
       :headers="headers"
@@ -18,6 +21,7 @@
       :server-items-length="totalCount"
       show-select
     >
+      <!-- 表格工具条 -->
       <template v-slot:top>
         <v-toolbar flat>
           <v-btn class="mx-1" color="success" @click="submit(selectedIds, 1)"
@@ -37,6 +41,8 @@
           ></v-text-field>
         </v-toolbar>
       </template>
+
+      <!-- 操作项 -->
       <template v-slot:item.actions="{ item }">
         <v-icon @click="submit([item.id], 1)" class="mr-2">mdi-check</v-icon>
         <v-icon @click="submit([item.id], 0)" class="mr-2">mdi-close</v-icon>
@@ -52,6 +58,7 @@ export default {
     return {
       snackbar: false,
       snackbarMsg: "",
+
       loading: false,
       keyword: "",
       options: {
@@ -78,6 +85,7 @@ export default {
     };
   },
   computed: {
+    // 表格中所有复选项的ID
     selectedIds() {
       let ids = [];
       for (let item of this.selected) {
@@ -103,6 +111,7 @@ export default {
     this.getEvents();
   },
   methods: {
+    // 获得待审批列表
     async getEvents() {
       this.loading = true;
       try {
@@ -121,6 +130,7 @@ export default {
         this.loading = false;
       }
     },
+    // 提交审批
     async submit(ids, action) {
       if (!ids.length) return;
       try {
@@ -132,10 +142,10 @@ export default {
           for (let i = 0; i < this.items.length; i++)
             if (this.items[i].id === id) this.items.splice(i, 1);
         this.snackbarMsg = result.data.msg;
-        this.snackbar = true;
       } catch (err) {
         console.error(err);
         this.snackbarMsg = err.data ? err.data.msg : "审批失败：服务器错误";
+      } finally {
         this.snackbar = true;
       }
     }

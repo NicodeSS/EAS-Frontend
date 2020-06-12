@@ -27,6 +27,7 @@ export default {
     this.clearTimer();
   },
   methods: {
+    // 获取是否有未审批项
     async getInfo() {
       try {
         let result = await this.$http.get("/event/event_list.do", {
@@ -41,14 +42,15 @@ export default {
       }
       this.hasApplication = true;
     },
+    // 刷新及发送通知
     doLogic() {
       this.getInfo();
       if (this.hasApplication && this.canSendNoti) {
-        console.log("Can send!");
         this.sendNotification();
         this.canSendNoti = false;
       }
     },
+    // 设置刷新定时器和通知发送定时器
     setTimer() {
       let _this = this;
       this.timer = setInterval(() => {
@@ -58,13 +60,16 @@ export default {
         _this.canSendNoti = true;
       }, 3600000);
     },
+    // 删除定时器
     clearTimer() {
       this.timer = null;
       this.timer_noti = null;
     },
+    // 跳转审批页面
     jumpApproval() {
       this.$router.push("/approval_manage");
     },
+    // 发送通知
     sendNotification() {
       if (window.Notification && Notification.permission !== "denied") {
         Notification.requestPermission(function(status) {

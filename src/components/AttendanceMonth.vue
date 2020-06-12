@@ -9,9 +9,11 @@
     :options.sync="options"
     :server-items-length="totalCount"
   >
+    <!-- 顶部工具条 -->
     <template v-slot:top>
       <v-toolbar flat>
         <v-row align="center" justify="center">
+          <!-- 部门列表 -->
           <v-col cols="3">
             <v-select
               v-if="isBoss"
@@ -25,7 +27,10 @@
               dense
             ></v-select>
           </v-col>
+
           <v-spacer></v-spacer>
+
+          <!-- 搜索框 -->
           <v-text-field
             v-model="keyword"
             append-icon="mdi-magnify"
@@ -101,6 +106,7 @@ export default {
     this.getOverview();
   },
   methods: {
+    // 获取详情
     async getOverview() {
       this.loading = true;
       try {
@@ -110,7 +116,6 @@ export default {
           departmentId: this.departmentId,
           keyword: this.keyword
         });
-        console.log(result.data);
         this.totalCount = result.data.data.count;
         this.items = result.data.data.items;
       } catch (err) {
@@ -120,6 +125,7 @@ export default {
         this.loading = false;
       }
     },
+    // 获取部门列表
     async getDepartments() {
       if (this.departments.length <= 1) {
         try {
