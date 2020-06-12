@@ -155,6 +155,37 @@
           </v-dialog>
 
           <v-divider class="mx-4" inset vertical></v-divider>
+
+          <!-- 添加部门 -->
+          <v-dialog v-model="dialog_depart" max-width="500px" v-if="isBoss">
+            <template v-slot:activator="{ on }">
+              <v-btn class="mx-1" color="teal" v-on="on">添加部门</v-btn>
+            </template>
+            <v-card>
+              <v-card-title>
+                <span class="headline">添加部门</span>
+              </v-card-title>
+              <v-card-text>
+                <v-container>
+                  <v-text-field v-model="departmentAddName" label="部门名称">
+                  </v-text-field>
+                </v-container>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" text @click="dialog_depart = false"
+                  >取消</v-btn
+                >
+                <v-btn
+                  color="blue darken-1"
+                  text
+                  @click="addDepartment"
+                  :disabled="!departmentAddName"
+                  >确定</v-btn
+                >
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
           <v-spacer></v-spacer>
 
           <!-- 搜索框 -->
@@ -185,6 +216,7 @@ export default {
       dialog: false,
       dialog_del: false,
       dialog_import: false,
+      dialog_depart: false,
 
       snackbar: false,
       snackbarMsg: "",
@@ -236,7 +268,9 @@ export default {
         department: [v => (v && v !== -1) || "请选择部门"],
         role: [v => (v >= 0 && v <= 2) || "请选择职位"]
       },
-      valid: true
+      valid: true,
+
+      departmentAddName: ""
     };
   },
   computed: {
@@ -254,6 +288,9 @@ export default {
       else if (this.$store.getters.userRole === 1)
         return [{ name: "员工", id: 0 }];
       else return [];
+    },
+    isBoss() {
+      return this.$store.getters.userRole === 2;
     },
     // 表格中选中项的Uid列表
     selectedUids() {
@@ -401,6 +438,20 @@ export default {
       } catch (err) {
         console.error(err);
         this.snackbarMsg = err.data ? err.data.msg : "操作失败";
+        this.snackbar = true;
+      }
+    },
+    async addDepartment() {
+      try {
+        let result = await this.$http.post("/manager/department_add.do", {
+          name: this.departmentAddName
+        });
+        this.snackbarMsg = result.data.msg;
+        this.departmentAddName = "";
+        this.dialog_depart = false;
+      } catch (err) {
+        this.snackbarMsg = err.data ? err.data.msg : "添加失败，服务器错误";
+      } finally {
         this.snackbar = true;
       }
     }
