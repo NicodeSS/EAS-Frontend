@@ -14,7 +14,7 @@ export default new Router({
       children: [
         {
           path: "/",
-          component: resolve => require(["../components/HelloWorld"], resolve)
+          component: resolve => require(["../views/AttendanceManage"], resolve)
         },
         {
           path: "/employee_manage",
@@ -40,6 +40,10 @@ export default new Router({
           path: "/arrangement_show/employee/:uId",
           component: resolve =>
             require(["../components/EmployeeArrangement"], resolve)
+        },
+        {
+          path: "/attendance_manage",
+          component: resolve => require(["../views/AttendanceManage"], resolve)
         }
       ]
     },
