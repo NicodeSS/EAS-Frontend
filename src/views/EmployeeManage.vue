@@ -383,6 +383,7 @@ export default {
         );
         this.snackbarMsg = result.data.msg;
         this.snackbar = true;
+        await this.getEmployees();
       } catch (err) {
         this.snackbarMsg = err.data ? err.data.msg : "导入失败，服务器错误";
         this.snackbar = true;
