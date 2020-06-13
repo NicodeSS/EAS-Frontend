@@ -158,6 +158,6 @@ export default {
   color: red;
 }
 .info-text > .info-leave {
-  color: yellow;
+  color: #daa520;
 }
 </style>

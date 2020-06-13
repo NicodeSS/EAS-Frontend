@@ -204,7 +204,7 @@
               </v-card-text>
 
               <!-- 选项卡 -->
-              <v-tabs v-model="tab" color="primary" dark>
+              <v-tabs v-model="tab" color="primary">
                 <v-tab :href="'#tab-1'">直接编辑</v-tab>
                 <v-tab :href="'#tab-2'">模版导入</v-tab>
                 <v-tab :href="'#tab-3'">临时排班</v-tab>
@@ -528,7 +528,7 @@
             </v-card>
           </v-dialog>
 
-          <v-divider class="mx-4" inset vertical></v-divider>
+          <v-divider v-if="isDM" class="mx-4" inset vertical></v-divider>
 
           <!-- 打卡位置设置对话框 -->
           <v-dialog
@@ -722,9 +722,13 @@ export default {
         if (!this.time[i]) return false;
       return true;
     },
-    // 当前用户是否为经理
+    // 当前用户是否为主管
     isDM() {
       return this.$store.getters.userRole === 1;
+    },
+    // 当前用户是否为经理
+    isBoss() {
+      return this.$store.getters.userRole === 2;
     },
     // 排班对话框标题
     dialog_arr_title() {

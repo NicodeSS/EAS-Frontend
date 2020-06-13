@@ -44,8 +44,12 @@
 
       <!-- 操作项 -->
       <template v-slot:item.actions="{ item }">
-        <v-icon @click="submit([item.id], 1)" class="mr-2">mdi-check</v-icon>
-        <v-icon @click="submit([item.id], 0)" class="mr-2">mdi-close</v-icon>
+        <v-icon @click="submit([item.id], 1)" class="mr-2" color="success"
+          >mdi-check</v-icon
+        >
+        <v-icon @click="submit([item.id], 0)" class="mr-2" color="error"
+          >mdi-close</v-icon
+        >
       </template>
     </v-data-table>
   </v-responsive>

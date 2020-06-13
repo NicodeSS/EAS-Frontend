@@ -1,7 +1,7 @@
 <template>
   <v-tooltip bottom color="orange" v-if="hasApplication">
     <template v-slot:activator="{ on }">
-      <v-btn icon color="orange" dark v-on="on" @click="jumpApproval"
+      <v-btn icon color="orange" v-on="on" @click="jumpApproval"
         ><v-icon>mdi-alert-circle</v-icon></v-btn
       >
     </template>

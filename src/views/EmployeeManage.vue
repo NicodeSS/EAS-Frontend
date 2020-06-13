@@ -121,7 +121,7 @@
           <!-- Excel导入对话框 -->
           <v-dialog v-model="dialog_import" max-width="500px">
             <template v-slot:activator="{ on }">
-              <v-btn class="mx-1" color="teal" v-on="on">Excel 导入</v-btn>
+              <v-btn class="mx-1" color="success" v-on="on">Excel 导入</v-btn>
             </template>
             <v-card>
               <v-card-title>
@@ -163,7 +163,7 @@
           <!-- 添加部门 -->
           <v-dialog v-model="dialog_depart" max-width="500px" v-if="isBoss">
             <template v-slot:activator="{ on }">
-              <v-btn class="mx-1" color="teal" v-on="on">添加部门</v-btn>
+              <v-btn class="mx-1" color="success" v-on="on">添加部门</v-btn>
             </template>
             <v-card>
               <v-card-title>

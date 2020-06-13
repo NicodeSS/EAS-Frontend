@@ -1,6 +1,6 @@
 <template>
   <v-card>
-    <v-tabs v-model="tab" color="primary" dark>
+    <v-tabs v-model="tab" color="primary">
       <v-tab :href="'#tab-1'">日视图</v-tab>
       <v-tab :href="'#tab-2'">月视图</v-tab>
 

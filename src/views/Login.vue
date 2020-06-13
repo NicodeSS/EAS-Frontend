@@ -5,7 +5,7 @@
         <v-row align="center" justify="center">
           <v-col cols="12" sm="8" md="4">
             <v-card class="elevation-12">
-              <v-toolbar color="primary" dark flat>
+              <v-toolbar color="primary" flat>
                 <v-toolbar-title>员工管理系统 - 登陆</v-toolbar-title>
               </v-toolbar>
               <v-card-text>
