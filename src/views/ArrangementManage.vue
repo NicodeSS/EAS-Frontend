@@ -532,7 +532,7 @@
 
           <!-- 打卡位置设置对话框 -->
           <v-dialog
-            v-if="isBoss"
+            v-if="isDM"
             v-model="dialog_location_edit"
             persistent
             max-width="500px"
@@ -723,8 +723,8 @@ export default {
       return true;
     },
     // 当前用户是否为经理
-    isBoss() {
-      return this.$store.getters.userRole === 2;
+    isDM() {
+      return this.$store.getters.userRole === 1;
     },
     // 排班对话框标题
     dialog_arr_title() {
