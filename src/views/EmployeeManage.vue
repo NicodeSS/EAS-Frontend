@@ -147,7 +147,11 @@
                 <v-btn color="blue darken-1" text @click="dialog_import = false"
                   >取消</v-btn
                 >
-                <v-btn color="blue darken-1" text @click="excelImport"
+                <v-btn
+                  color="blue darken-1"
+                  text
+                  @click="excelImport"
+                  :disabled="!file.length"
                   >确定</v-btn
                 >
               </v-card-actions>
