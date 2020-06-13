@@ -864,6 +864,7 @@ export default {
         let result = await this.$http.post("/template/template_add.do", temp);
         this.snackbarMsg = result.data.msg;
         this.snackbar = true;
+        await this.getTemplateList();
       } catch (err) {
         console.error(err);
         this.snackbarMsg = err.data ? err.data.msg : "保存模版失败：服务器错误";
