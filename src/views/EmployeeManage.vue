@@ -151,7 +151,7 @@
                   color="blue darken-1"
                   text
                   @click="excelImport"
-                  :disabled="!file.length"
+                  :disabled="!file"
                   >确定</v-btn
                 >
               </v-card-actions>
@@ -265,7 +265,7 @@ export default {
         roleName: ""
       },
       departments: [],
-      file: [],
+      file: null,
       rules: {
         uid: [v => v.length >= 4 || "工号至少4位字符"],
         name: [v => !!v || "请输入姓名"],
@@ -392,7 +392,7 @@ export default {
         this.snackbarMsg = err.data ? err.data.msg : "导入失败，服务器错误";
         this.snackbar = true;
       } finally {
-        this.file = [];
+        this.file = null;
         this.dialog_import = false;
       }
     },
