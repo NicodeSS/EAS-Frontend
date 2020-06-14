@@ -1109,6 +1109,7 @@ export default {
           location: this.location
         });
         this.snackbarMsg = result.data.msg;
+        thgis.dialog_location_edit = false;
       } catch (err) {
         console.error(err);
         this.snackbarMsg = err.data ? err.data.msg : "保存失败：服务器错误";
