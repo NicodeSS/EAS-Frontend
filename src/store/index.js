@@ -10,7 +10,7 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     //Layout related
-    siteTitle: "EAS",
+    siteTitle: "叮咚",
     drawer: null,
     menu: [
       {
