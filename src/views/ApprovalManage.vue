@@ -67,7 +67,7 @@ export default {
       keyword: "",
       options: {
         page: 1,
-        itemsPerPage: 15
+        itemsPerPage: 10
       },
       totalCount: 0,
       selected: [],

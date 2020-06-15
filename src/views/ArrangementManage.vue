@@ -641,7 +641,7 @@ export default {
       loading: false,
       options: {
         page: 1,
-        itemsPerPage: 15
+        itemsPerPage: 10
       },
       keyword: "",
       headers: [
@@ -676,7 +676,7 @@ export default {
       loading_tmp: false,
       options_tmp: {
         page: 1,
-        itemsPerPage: 15
+        itemsPerPage: 10
       },
       headers_tmp: [
         {
