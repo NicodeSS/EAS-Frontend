@@ -47,7 +47,6 @@ export default {
       this.getInfo();
       if (this.hasApplication && this.canSendNoti) {
         this.sendNotification();
-        this.canSendNoti = false;
       }
     },
     // 设置刷新定时器和通知发送定时器
@@ -76,6 +75,7 @@ export default {
           let noti = new Notification("审批提醒", {
             body: "您有未处理的审批！"
           });
+          this.canSendNoti = false;
         });
       }
     }
