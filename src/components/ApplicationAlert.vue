@@ -75,8 +75,8 @@ export default {
           let noti = new Notification("审批提醒", {
             body: "您有未处理的审批！"
           });
-          this.canSendNoti = false;
         });
+        this.canSendNoti = false;
       }
     }
   }
