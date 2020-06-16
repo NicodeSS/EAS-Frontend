@@ -1,21 +1,24 @@
-# eas2
+# 员工排班管理系统 Web 端后台
 
-> Employee Attendance System Frontend
+> A Employee Attendance System Frontend
 
-## Build Setup
+## 简介
 
-``` bash
-# install dependencies
-npm install
+软件工程大作业——员工排班管理系统的 Web 端部分的经理/部门主管管理后台。
+缺失后端，不能正常使用，仅作展示。
 
-# serve with hot reload at localhost:8080
-npm run dev
+## 如果你还是想看看
 
-# build for production with minification
-npm run build
+1. Clone 本项目
+2. 请去掉 `App.vue` 中的 `router.beforeEach()` 路由守卫函数。
+3. 执行 `npm install` 安装所需模块。
+4. 使用 `npm run dev` 进行本地预览。
 
-# build for production and view the bundle analyzer report
-npm run build --report
-```
+## 项目依赖
 
-For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+- Vue
+- Vuex
+- VueRouter
+- Vuetify
+- Webpack
+- axios
